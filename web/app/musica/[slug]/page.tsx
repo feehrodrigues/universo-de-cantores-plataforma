@@ -1,4 +1,4 @@
-import { client } from "@/lib/sanity";
+import { client, urlFor } from "@/lib/sanity";
 import { PortableText } from "@portabletext/react";
 import VideoPlayer from "@/app/components/VideoPlayer";
 import Link from "next/link";
