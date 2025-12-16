@@ -34,11 +34,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
   }
 
+  // BLINDAGEM: Só tenta gerar imagem se ela existir
+  const ogImages = [];
+  if (kit.coverImage) {
+    ogImages.push(urlFor(kit.coverImage).width(800).url());
+  }
+
   return {
     title: `${kit.title} - Kit de Ensaio | Universo de Cantores`,
-    description: `Aprenda a cantar ${kit.title} (${kit.artist}). Kit de ensaio com vozes separadas (Soprano, Contralto, Tenor).`,
+    description: `Aprenda a cantar ${kit.title} (${kit.artist}). Kit de ensaio com vozes separadas.`,
     openGraph: {
-      images: [urlFor(kit.coverImage).width(800).url()], // Imagem que aparece quando compartilha no Zap
+      images: ogImages, 
     },
   };
 }
