@@ -5,6 +5,7 @@ export default defineCliConfig({
     projectId: '8yxu9vfv',
     dataset: 'production'
   },
+  studioHost: 'universodecantores',
   deployment: {
     /**
      * Enable auto-updates for studios.

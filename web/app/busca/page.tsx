@@ -1,6 +1,8 @@
 import { client, urlFor } from "@/lib/sanity";
 import Link from "next/link";
 import { ArrowLeft, Mic2, SearchX } from "lucide-react";
+import { getKitImage } from "@/lib/helpers"; // <--- Importe aqui
+
 
 // Tipagem para receber os parâmetros de busca na URL
 type Props = {
@@ -69,16 +71,17 @@ export default async function SearchPage({ searchParams }: Props) {
                 <div className="bg-white rounded-2xl p-4 shadow-sm hover:shadow-2xl transition-all duration-300 border border-gray-100 flex flex-col h-full">
                   
                   <div className="relative aspect-video rounded-xl overflow-hidden mb-4 bg-gray-100">
-                    {kit.coverImage ? (
-                      <img 
-                        src={urlFor(kit.coverImage).width(500).url()} 
-                        alt={kit.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-300">
-                        <Mic2 size={40} />
-                      </div>
+  {/* AQUI MUDOU A LÓGICA */}
+  {getKitImage(kit) ? (
+    <img 
+      src={getKitImage(kit)!} 
+      alt={kit.title}
+      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+    />
+  ) : (
+    <div className="w-full h-full flex items-center justify-center text-gray-300">
+      <Mic2 size={40} />
+    </div>
                     )}
                      <div className="absolute top-3 right-3 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider text-gray-800 shadow-sm">
                         {kit.difficulty === 'facil' ? 'Fácil' : kit.difficulty === 'medio' ? 'Médio' : 'Difícil'}
