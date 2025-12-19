@@ -8,7 +8,7 @@ async function getAllKits() {
     *[_type == "kit"] | order(_createdAt desc) {
       _id, title, artist, slug, difficulty, coverImage, voices
     }
-  `);
+  `, {}, { next: { revalidate: 60 } });
 }
 
 export default async function AllKitsPage() {

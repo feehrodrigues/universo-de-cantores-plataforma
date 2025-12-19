@@ -9,7 +9,6 @@ type Props = {
 }
 
 async function getCantata(slug: string) {
-  // O simbolo -> significa: "Entre nesse link e traga os dados dele"
   return client.fetch(`
     *[_type == "cantata" && slug.current == $slug][0] {
       title,
@@ -24,7 +23,7 @@ async function getCantata(slug: string) {
         voices
       }
     }
-  `, { slug });
+  `, { slug }, { next: { revalidate: 60 } });
 }
 
 export default async function CantataPage({ params }: Props) {

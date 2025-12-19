@@ -18,7 +18,7 @@ async function getHomeData() {
     "harpa": *[_type == "kit" && (artist match "Harpa*" || title match "Harpa*")] | order(title asc)[0...4] {
       _id, title, artist, slug, difficulty, coverImage
     }
-  }`);
+  }`, {}, { next: { revalidate: 60 } });
 }
 
 export default async function Home() {
