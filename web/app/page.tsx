@@ -1,12 +1,11 @@
 import { ArrowDown, Mic2, MessageCircle, ArrowRight, Layers } from "lucide-react";
 import Link from "next/link";
-import { client } from "@/lib/sanity";
+import { client, urlFor } from "@/lib/sanity";
 import { getKitImage } from "@/lib/helpers";
 import SearchInput from "@/app/components/SearchInput";
-import { urlFor } from "@/lib/sanity";
 import Image from "next/image";
 
-// --- 1. BUSCA DE DADOS (Agora inclui Cantatas) ---
+// --- 1. BUSCA DE DADOS ---
 async function getHomeData() {
   return client.fetch(`{
     "cantatas": *[_type == "cantata"] | order(_createdAt desc)[0...3] {
@@ -28,8 +27,10 @@ export default async function Home() {
   return (
     <main className="min-h-screen bg-[#F3F4F6] text-gray-800 flex flex-col relative">
       
-      {/* --- HERO SECTION --- */}
+      {/* --- HERO SECTION (TOPO) --- */}
       <div className="min-h-[85vh] flex flex-col justify-between relative bg-gradient-to-b from-gray-50 to-[#F3F4F6]">
+        
+        {/* CABEÇALHO */}
         <header className="w-full max-w-7xl mx-auto p-6 md:p-10 flex justify-between items-center z-10">
           <div className="text-sm md:text-base font-medium tracking-widest uppercase text-gray-900">
             Universo de Cantores
@@ -39,17 +40,14 @@ export default async function Home() {
           </Link>
         </header>
 
+        {/* CENTRO DA TELA */}
         <section className="flex-1 flex flex-col items-center justify-center px-4 relative z-10">
+          
+          {/* Brilho de Fundo */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-purple-300 rounded-full blur-[120px] opacity-20 pointer-events-none"></div>
           
-          <div className="mb-10 text-center relative">
-            <section className="flex-1 flex flex-col items-center justify-center px-4 relative z-10">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-purple-300 rounded-full blur-[120px] opacity-20 pointer-events-none"></div>
-          
-          {/* --- AQUI COMEÇA A MUDANÇA DA LOGO --- */}
+          {/* LOGO E TEXTO */}
           <div className="mb-8 text-center relative flex flex-col items-center w-full">
-            
-            {/* Container da Logo (Controla o tamanho máximo) */}
             <div className="relative w-full max-w-[400px] md:max-w-[500px]">
               <Image 
                 src="/logo.svg" 
@@ -57,25 +55,11 @@ export default async function Home() {
                 width={0} 
                 height={0} 
                 sizes="100vw"
-                priority // Carrega na hora
-                className="w-full h-auto drop-shadow-sm" // O h-auto mantém a proporção do SVG
+                priority 
+                className="w-full h-auto drop-shadow-sm"
               />
             </div>
-
             <p className="text-gray-500 text-lg md:text-xl max-w-lg mx-auto mt-4">
-                Kits de ensaio, divisão de vozes e playbacks para o seu ministério.
-            </p>
-          </div>
-          {/* --- FIM DA MUDANÇA --- */}
-
-          <SearchInput />
-          
-          <div className="mt-12 flex flex-col items-center gap-2 animate-bounce text-gray-400 text-xs uppercase tracking-widest">
-            <span className="bg-white/50 px-3 py-1 rounded-full backdrop-blur-sm">Role para explorar</span>
-            <ArrowDown size={16} />
-          </div>
-        </section>
-            <p className="text-gray-500 text-lg md:text-xl max-w-lg mx-auto">
                 Kits de ensaio, divisão de vozes e playbacks para o seu ministério.
             </p>
           </div>
@@ -89,7 +73,7 @@ export default async function Home() {
         </section>
       </div>
 
-      {/* --- NOVA SEÇÃO: CANTATAS E COLEÇÕES --- */}
+      {/* --- SEÇÃO 1: CANTATAS --- */}
       {data.cantatas.length > 0 && (
         <section className="w-full max-w-7xl mx-auto px-6 md:px-10 py-10">
             <div className="flex items-center gap-3 mb-6">
@@ -103,16 +87,12 @@ export default async function Home() {
                 {data.cantatas.map((cantata: any) => (
                     <Link href={`/cantatas/${cantata.slug.current}`} key={cantata._id} className="group">
                         <div className="relative h-64 rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 cursor-pointer">
-                            {/* Imagem de Fundo (Se tiver, senão usa cor) */}
                             {cantata.coverImage ? (
                                 <img src={urlFor(cantata.coverImage).width(600).url()} className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"/>
                             ) : (
                                 <div className="absolute inset-0 bg-gradient-to-br from-indigo-500 to-purple-600 group-hover:scale-110 transition-transform duration-700" />
                             )}
-                            
-                            {/* Gradiente Escuro para ler o texto */}
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-
                             <div className="absolute bottom-0 left-0 p-6 text-white">
                                 <h3 className="text-2xl font-bold mb-1 leading-tight">{cantata.title}</h3>
                                 <p className="text-sm text-gray-300 line-clamp-2 mb-3">{cantata.description}</p>
@@ -127,7 +107,7 @@ export default async function Home() {
         </section>
       )}
 
-      {/* --- SEÇÃO: HARPA CRISTÃ --- */}
+      {/* --- SEÇÃO 2: HARPA CRISTÃ --- */}
       {data.harpa.length > 0 && (
         <section className="w-full max-w-7xl mx-auto px-6 md:px-10 py-10">
             <h2 className="text-2xl font-bold text-indigo-900 flex items-center gap-2 mb-6">
@@ -141,7 +121,7 @@ export default async function Home() {
         </section>
       )}
 
-      {/* --- SEÇÃO: ÚLTIMOS LANÇAMENTOS --- */}
+      {/* --- SEÇÃO 3: ÚLTIMOS LANÇAMENTOS --- */}
       <section className="w-full max-w-7xl mx-auto px-6 md:px-10 py-10 pb-20">
         <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-3">
@@ -178,6 +158,7 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* RODAPÉ */}
       <footer className="bg-gray-100 py-10 text-center text-gray-500 text-sm border-t border-gray-200">
         <p className="mb-2">© 2025 Universo de Cantores.</p>
         <p className="text-xs">Desenvolvido com tecnologia Next.js & Sanity.</p>
