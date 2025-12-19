@@ -5,7 +5,6 @@ import { getKitImage } from "@/lib/helpers";
 import SearchInput from "@/app/components/SearchInput";
 import Image from "next/image";
 
-<head><meta name="google-site-verification" content="uspCJ1O4-1M5HWluwl8-9iFDo1hFwFBGLK8Tie6urUk" /></head>
 // --- 1. BUSCA DE DADOS ---
 async function getHomeData() {
   return client.fetch(`{
