@@ -3,7 +3,8 @@ import Link from "next/link";
 import { client, urlFor } from "@/lib/sanity";
 import { getKitImage } from "@/lib/helpers";
 import SearchInput from "@/app/components/SearchInput";
-import Image from "next/image";
+// O import do Image não é mais necessário para o logo, mas mantive caso queira usar depois
+// import Image from "next/image"; 
 
 // --- 1. BUSCA DE DADOS ---
 async function getHomeData() {
@@ -49,13 +50,10 @@ export default async function Home() {
           {/* LOGO E TEXTO */}
           <div className="mb-8 text-center relative flex flex-col items-center w-full">
             <div className="relative w-full max-w-[400px] md:max-w-[500px]">
-              <Image 
+              {/* ALTERAÇÃO AQUI: Usando img normal para garantir que o SVG apareça */}
+              <img 
                 src="/logo.svg" 
                 alt="Universo de Cantores" 
-                width={0} 
-                height={0} 
-                sizes="100vw"
-                priority 
                 className="w-full h-auto drop-shadow-sm"
               />
             </div>
