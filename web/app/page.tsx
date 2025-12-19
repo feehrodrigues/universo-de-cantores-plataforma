@@ -4,6 +4,7 @@ import { client } from "@/lib/sanity";
 import { getKitImage } from "@/lib/helpers";
 import SearchInput from "@/app/components/SearchInput";
 import { urlFor } from "@/lib/sanity";
+import Image from "next/image";
 
 // --- 1. BUSCA DE DADOS (Agora inclui Cantatas) ---
 async function getHomeData() {
@@ -42,9 +43,38 @@ export default async function Home() {
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-purple-300 rounded-full blur-[120px] opacity-20 pointer-events-none"></div>
           
           <div className="mb-10 text-center relative">
-            <h1 className="text-5xl md:text-7xl font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 drop-shadow-sm mb-4">
-              universo<br/>de cantores
-            </h1>
+            <section className="flex-1 flex flex-col items-center justify-center px-4 relative z-10">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-purple-300 rounded-full blur-[120px] opacity-20 pointer-events-none"></div>
+          
+          {/* --- AQUI COMEÇA A MUDANÇA DA LOGO --- */}
+          <div className="mb-8 text-center relative flex flex-col items-center w-full">
+            
+            {/* Container da Logo (Controla o tamanho máximo) */}
+            <div className="relative w-full max-w-[400px] md:max-w-[500px]">
+              <Image 
+                src="/logo.svg" 
+                alt="Universo de Cantores" 
+                width={0} 
+                height={0} 
+                sizes="100vw"
+                priority // Carrega na hora
+                className="w-full h-auto drop-shadow-sm" // O h-auto mantém a proporção do SVG
+              />
+            </div>
+
+            <p className="text-gray-500 text-lg md:text-xl max-w-lg mx-auto mt-4">
+                Kits de ensaio, divisão de vozes e playbacks para o seu ministério.
+            </p>
+          </div>
+          {/* --- FIM DA MUDANÇA --- */}
+
+          <SearchInput />
+          
+          <div className="mt-12 flex flex-col items-center gap-2 animate-bounce text-gray-400 text-xs uppercase tracking-widest">
+            <span className="bg-white/50 px-3 py-1 rounded-full backdrop-blur-sm">Role para explorar</span>
+            <ArrowDown size={16} />
+          </div>
+        </section>
             <p className="text-gray-500 text-lg md:text-xl max-w-lg mx-auto">
                 Kits de ensaio, divisão de vozes e playbacks para o seu ministério.
             </p>
