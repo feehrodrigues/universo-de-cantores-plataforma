@@ -3,8 +3,7 @@ import Link from "next/link";
 import { client, urlFor } from "@/lib/sanity";
 import { getKitImage } from "@/lib/helpers";
 import SearchInput from "@/app/components/SearchInput";
-// O import do Image não é mais necessário para o logo, mas mantive caso queira usar depois
-// import Image from "next/image"; 
+import Image from "next/image";
 
 // --- 1. BUSCA DE DADOS ---
 async function getHomeData() {
@@ -47,16 +46,20 @@ export default async function Home() {
           {/* Brilho de Fundo */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-purple-300 rounded-full blur-[120px] opacity-20 pointer-events-none"></div>
           
-          {/* LOGO E TEXTO */}
+          {/* LOGO PNG E TEXTO */}
           <div className="mb-8 text-center relative flex flex-col items-center w-full">
+            
             <div className="relative w-full max-w-[400px] md:max-w-[500px]">
-              {/* ALTERAÇÃO AQUI: Usando img normal para garantir que o SVG apareça */}
-              <img 
-                src="/logo.svg" 
+              <Image 
+                src="/logo.png" 
                 alt="Universo de Cantores" 
-                className="w-full h-auto drop-shadow-sm"
+                width={500} 
+                height={200} 
+                priority 
+                className="w-full h-auto drop-shadow-sm" 
               />
             </div>
+
             <p className="text-gray-500 text-lg md:text-xl max-w-lg mx-auto mt-4">
                 Kits de ensaio, divisão de vozes e playbacks para o seu ministério.
             </p>
