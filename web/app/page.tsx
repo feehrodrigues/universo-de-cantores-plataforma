@@ -75,19 +75,26 @@ export default async function Home() {
       </div>
 
       {/* --- SEÇÃO 1: CANTATAS --- */}
-      {data.cantatas.length > 0 && (
+      {/* SEÇÃO DE CANTATAS NA HOME */}
+      {data.cantatas && data.cantatas.length > 0 && (
         <section className="w-full max-w-7xl mx-auto px-6 md:px-10 py-10">
-            <div className="flex items-center gap-3 mb-6">
-                <div className="p-2 bg-purple-100 rounded-lg text-purple-700">
-                    <Layers size={24} />
+            <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                    <div className="p-2 bg-purple-100 rounded-lg text-purple-700"><Layers size={24} /></div>
+                    <h2 className="text-2xl font-bold text-gray-900">Cantatas e Especiais</h2>
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900">Cantatas e Especiais</h2>
+                {/* O BOTÃO QUE VOCÊ PEDIU */}
+                <Link href="/cantatas" className="flex items-center gap-1 text-sm font-bold text-purple-600 hover:text-purple-800 transition">
+                    Ver todas <ArrowRight size={16} />
+                </Link>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* ... aqui vai o grid das cantatas ... */}
+             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {data.cantatas.map((cantata: any) => (
                     <Link href={`/cantatas/${cantata.slug.current}`} key={cantata._id} className="group">
-                        <div className="relative h-64 rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 cursor-pointer">
+                        {/* ... card da cantata igual antes ... */}
+                         <div className="relative h-64 rounded-2xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 cursor-pointer">
                             {cantata.coverImage ? (
                                 <img src={urlFor(cantata.coverImage).width(600).url()} className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"/>
                             ) : (
@@ -107,7 +114,6 @@ export default async function Home() {
             </div>
         </section>
       )}
-
       {/* --- SEÇÃO 2: HARPA CRISTÃ --- */}
       {data.harpa.length > 0 && (
         <section className="w-full max-w-7xl mx-auto px-6 md:px-10 py-10">
