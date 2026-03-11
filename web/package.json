@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
@@ -14,6 +15,7 @@
     "@clerk/nextjs": "^7.0.4",
     "@jitsi/react-sdk": "^1.4.4",
     "@portabletext/react": "^6.0.0",
+    "@prisma/client": "^6.5.0",
     "@sanity/image-url": "^2.0.2",
     "@types/file-saver": "^2.0.7",
     "bcryptjs": "^3.0.3",
@@ -46,6 +48,7 @@
     "baseline-browser-mapping": "^2.10.0",
     "eslint": "^9",
     "eslint-config-next": "16.0.10",
+    "prisma": "^6.5.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
