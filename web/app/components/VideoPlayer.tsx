@@ -44,7 +44,7 @@ export default function VideoPlayer({ voices }: { voices: any[] }) {
             className={`
               flex items-center gap-2 px-6 py-3 rounded-full font-bold text-sm uppercase tracking-wider transition-all transform hover:-translate-y-1
               ${selectedVoice.voiceName === voz.voiceName 
-                ? "bg-purple-600 text-white shadow-lg ring-4 ring-purple-200" 
+                ? "bg-[#7732A6] text-white shadow-lg ring-4 ring-purple-200" 
                 : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"}
             `}
           >

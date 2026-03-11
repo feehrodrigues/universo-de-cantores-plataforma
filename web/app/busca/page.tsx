@@ -1,107 +1,134 @@
-import { client, urlFor } from "@/lib/sanity";
+import { client } from "@/lib/sanity";
 import Link from "next/link";
-import { ArrowLeft, Mic2, SearchX } from "lucide-react";
-import { getKitImage } from "@/lib/helpers"; // <--- Importe aqui
+import { Search, SearchX, ArrowRight } from "lucide-react";
+import { getKitImage } from "@/lib/helpers";
+import PageLayout from "@/app/components/PageLayout";
 
-
-// Tipagem para receber os parâmetros de busca na URL
 type Props = {
   searchParams: Promise<{ q: string }>;
 }
 
 async function searchKits(term: string) {
-  // A query GROQ usa 'match' para buscar parecido (*termo*)
   return client.fetch(`
     *[_type == "kit" && title match $term + "*"] | order(_createdAt desc) {
-      _id,
-      title,
-      artist,
-      slug,
-      difficulty,
-      coverImage,
-      voices
+      _id, title, artist, slug, difficulty, coverImage, voices
     }
   `, { term });
 }
 
 export default async function SearchPage({ searchParams }: Props) {
   const resolvedParams = await searchParams;
-  const term = resolvedParams.q || ""; // Pega o que a pessoa digitou
-  
+  const term = resolvedParams.q || "";
   const kits = await searchKits(term);
 
   return (
-    <div className="min-h-screen bg-[#F3F4F6] text-gray-800">
-      
-      {/* HEADER SIMPLES */}
-      <nav className="max-w-7xl mx-auto p-6 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-gray-500 hover:text-purple-600 transition">
-          <ArrowLeft size={18} /> Voltar
-        </Link>
-        <div className="text-sm font-medium text-purple-600">
-          Buscando por: "{term}"
-        </div>
-      </nav>
-
-      <main className="max-w-7xl mx-auto px-6 py-10">
-        <h1 className="text-3xl font-bold mb-8 flex items-center gap-3">
-          Resultados da Pesquisa
-          <span className="text-sm font-normal bg-gray-200 px-3 py-1 rounded-full text-gray-600">
-            {kits.length} encontrados
-          </span>
-        </h1>
-
-        {kits.length === 0 ? (
-          // ESTADO VAZIO (QUANDO NÃO ACHA NADA)
-          <div className="flex flex-col items-center justify-center py-20 text-center">
-            <div className="bg-gray-200 p-6 rounded-full mb-4">
-              <SearchX size={48} className="text-gray-400" />
+    <PageLayout >
+      <div className="min-h-screen">
+        {/* HEADER */}
+        <section className="relative py-12 md:py-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-8">
+              <h1 className="text-3xl md:text-4xl font-bold text-[var(--foreground)] mb-4" style={{ fontFamily: 'Comfortaa, sans-serif' }}>
+                Resultados da Busca
+              </h1>
+              <p className="text-[var(--foreground-muted)]">
+                {kits.length > 0 ? (
+                  <>Encontramos <span className="font-bold text-[#7732A6]">{kits.length}</span> resultados para "<span className="font-bold">{term}</span>"</>
+                ) : (
+                  <>Buscando por "<span className="font-bold">{term}</span>"</>
+                )}
+              </p>
             </div>
-            <h2 className="text-xl font-bold text-gray-700">Poxa, não encontramos nada.</h2>
-            <p className="text-gray-500 mt-2">Tente buscar pelo nome do artista ou outra palavra-chave.</p>
-            <Link href="/" className="mt-6 bg-purple-600 text-white px-6 py-2 rounded-full font-bold hover:bg-purple-700 transition">
-              Voltar para o Início
-            </Link>
+
+            {/* Barra de busca */}
+            <form action="/busca" method="get" className="max-w-xl mx-auto relative">
+              <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none">
+                <Search className="h-5 w-5 text-[#7732A6]" />
+              </div>
+              <input 
+                type="text" 
+                name="q"
+                defaultValue={term}
+                className="w-full p-5 pl-14 text-base text-[var(--foreground)] border border-[var(--card-border)] rounded-full bg-[var(--card-bg)] focus:ring-2 focus:ring-[#7732A6] focus:border-transparent shadow-lg hover:shadow-xl transition-all placeholder-gray-400"
+                placeholder="Buscar por música ou artista..."
+              />
+            </form>
+          </div>
+        </section>
+
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+          {kits.length === 0 ? (
+            /* ESTADO VAZIO */
+            <div className="flex flex-col items-center justify-center py-20 text-center">
+              <div className="w-20 h-20 bg-[#7732A6]/10 rounded-full flex items-center justify-center mb-6">
+                <SearchX size={40} className="text-[#7732A6]" />
+              </div>
+              <h2 className="text-xl font-bold text-[var(--foreground)] mb-2" style={{ fontFamily: 'Comfortaa, sans-serif' }}>
+                Nenhum resultado encontrado
+              </h2>
+              <p className="text-[var(--foreground-muted)] mb-6 max-w-md">
+                Tente buscar pelo nome do artista ou outra palavra-chave. Você também pode pedir um kit pelo WhatsApp!
+              </p>
+              <div className="flex gap-4">
+                <Link href="/" className="btn-secondary">
+                  Voltar para Início
+                </Link>
+                <a 
+                  href="https://wa.me/5511977247792?text=Olá Felipe! Não encontrei o kit que procurava..."
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-primary"
+                >
+                Pedir Kit
+              </a>
+            </div>
           </div>
         ) : (
-          // GRID DE RESULTADOS (Mesmo design da Home)
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          /* GRID DE RESULTADOS */
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {kits.map((kit: any) => (
-              <Link href={`/musica/${kit.slug.current}`} key={kit._id} className="group">
-                <div className="bg-white rounded-2xl p-4 shadow-sm hover:shadow-2xl transition-all duration-300 border border-gray-100 flex flex-col h-full">
-                  
-                  <div className="relative aspect-video rounded-xl overflow-hidden mb-4 bg-gray-100">
-  {/* AQUI MUDOU A LÓGICA */}
-  {getKitImage(kit) ? (
-    <img 
-      src={getKitImage(kit)!} 
-      alt={kit.title}
-      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-    />
-  ) : (
-    <div className="w-full h-full flex items-center justify-center text-gray-300">
-      <Mic2 size={40} />
-    </div>
-                    )}
-                     <div className="absolute top-3 right-3 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider text-gray-800 shadow-sm">
-                        {kit.difficulty === 'facil' ? 'Fácil' : kit.difficulty === 'medio' ? 'Médio' : 'Difícil'}
+              <Link href={`/musica/${kit.slug?.current}`} key={kit._id} className="group">
+                <div className="bg-[var(--card-bg)] backdrop-blur-sm rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-[var(--card-border)] h-full flex flex-col">
+                  <div className="relative aspect-video bg-gradient-to-br from-[#7732A6]/20 to-[#F252BA]/20 overflow-hidden">
+                    {getKitImage(kit) ? (
+                      <img 
+                        src={getKitImage(kit)!} 
+                        alt={kit.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <span className="text-5xl opacity-30">🎤</span>
                       </div>
+                    )}
+                    {kit.difficulty && (
+                      <div className="absolute top-3 right-3">
+                        <span className="px-3 py-1 rounded-full text-xs font-bold bg-white/90 backdrop-blur-md shadow-sm text-gray-800">
+                          {kit.difficulty}
+                        </span>
+                      </div>
+                    )}
                   </div>
-
-                  <div className="flex-1 flex flex-col">
-                    <h3 className="text-xl font-bold text-gray-900 leading-tight mb-1 group-hover:text-purple-600 transition-colors">
+                  <div className="p-5 flex-1 flex flex-col">
+                    <h3 className="text-lg font-bold text-[var(--foreground)] mb-1 group-hover:text-[#7732A6] transition-colors line-clamp-2" style={{ fontFamily: 'Comfortaa, sans-serif' }}>
                       {kit.title}
                     </h3>
-                    <p className="text-sm text-gray-500 font-medium uppercase tracking-wide mb-4">
+                    <p className="text-sm text-[var(--foreground-muted)] font-medium uppercase tracking-wide mb-4">
                       {kit.artist}
                     </p>
+                    <div className="mt-auto flex items-center justify-end">
+                      <span className="text-[#7732A6] font-bold text-sm group-hover:translate-x-1 transition-transform inline-flex items-center gap-1">
+                        Ouvir <ArrowRight size={14} />
+                      </span>
+                    </div>
                   </div>
                 </div>
               </Link>
             ))}
           </div>
         )}
-      </main>
-    </div>
+        </section>
+      </div>
+    </PageLayout>
   );
 }

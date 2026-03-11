@@ -1,26 +1,403 @@
+@import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Paleta Universo de Cantores */
+  --uc-roxo: #7732A6;
+  --uc-rosa: #F252BA;
+  --uc-ciano: #72F2F2;
+  --uc-verde: #5CF273;
+  --uc-amarelo: #F2D338;
+  
+  /* Variações */
+  --uc-roxo-dark: #5B21B6;
+  --uc-roxo-light: #9F67D6;
+  
+  /* =====================================================
+     SISTEMA DE CORES INTELIGENTE
+     Light = Roxo para destaque (bom contraste com fundo claro)
+     Dark = Ciano para destaque (bom contraste com fundo escuro)
+     ===================================================== */
+  
+  /* Cor de destaque primária - MUDA COM O TEMA */
+  --accent-primary: #7732A6;
+  --accent-primary-hover: #5B21B6;
+  --accent-secondary: #F252BA;
+  
+  /* Backgrounds de ícones/badges que mudam com tema */
+  --icon-bg: rgba(119, 50, 166, 0.1);
+  --icon-bg-solid: #7732A6;
+  --badge-bg: rgba(119, 50, 166, 0.1);
+  --badge-text: #7732A6;
+  
+  /* Light Mode (Default) */
+  --background: #F8FAFC;
+  --background-secondary: #FFFFFF;
+  --foreground: #1E293B;
+  --foreground-muted: #64748B;
+  --card-bg: #FFFFFF;
+  --card-border: rgba(119, 50, 166, 0.08);
+  --input-bg: #FFFFFF;
+  --input-border: #E2E8F0;
+  
+  /* Gradientes */
+  --gradient-hero: linear-gradient(135deg, rgba(119, 50, 166, 0.08) 0%, rgba(114, 242, 242, 0.12) 50%, rgba(242, 82, 186, 0.06) 100%);
+  --gradient-primary: linear-gradient(135deg, #7732A6 0%, #5B21B6 50%, #72F2F2 100%);
+  --gradient-cta: linear-gradient(135deg, #7732A6 0%, #5B21B6 100%);
+  --gradient-accent: linear-gradient(135deg, #F252BA 0%, #7732A6 100%);
 }
+
+/* Sistema de cores simplificado - Light Mode apenas */
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: 'Montserrat', sans-serif;
+  --font-display: 'Comfortaa', sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Não usar dark mode automático - manter light sempre por enquanto */
+
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Montserrat', Arial, sans-serif;
+  min-height: 100vh;
+}
+
+/* Tipografia */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Comfortaa', sans-serif;
+  font-weight: 700;
+}
+
+/* Scrollbar elegante - Light */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--uc-roxo) 0%, var(--uc-ciano) 100%);
+  border-radius: 100px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--uc-roxo);
+}
+
+
+
+/* Seleção de texto */
+::selection {
+  background-color: rgba(119, 50, 166, 0.2);
+  color: var(--uc-roxo);
+}
+
+/* Animações suaves */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.05); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 4s ease-in-out infinite;
+}
+
+/* Glassmorphism - Light Mode */
+.glass {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+
+
+.glass-dark {
+  background: rgba(119, 50, 166, 0.1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(119, 50, 166, 0.1);
+}
+
+
+
+/* Cards com hover suave */
+.card-hover {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px -12px rgba(119, 50, 166, 0.15);
+}
+
+/* Botões - Light Mode */
+.btn-primary {
+  background: var(--gradient-cta);
+  color: white;
+  font-weight: 700;
+  padding: 0.75rem 1.5rem;
+  border-radius: 9999px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 14px 0 rgba(119, 50, 166, 0.25);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px 0 rgba(119, 50, 166, 0.35);
+}
+
+
+
+.btn-secondary {
+  background: white;
+  color: var(--uc-roxo);
+  font-weight: 700;
+  padding: 0.75rem 1.5rem;
+  border-radius: 9999px;
+  border: 2px solid rgba(119, 50, 166, 0.15);
+  transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+  border-color: var(--uc-roxo);
+  background: rgba(119, 50, 166, 0.05);
+}
+
+
+
+/* Gradiente de fundo decorativo - Light Mode */
+.bg-gradient-mesh {
+  background: 
+    radial-gradient(ellipse 80% 50% at 20% 40%, rgba(119, 50, 166, 0.12) 0%, transparent 50%),
+    radial-gradient(ellipse 60% 50% at 80% 20%, rgba(114, 242, 242, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 50% at 60% 80%, rgba(242, 82, 186, 0.08) 0%, transparent 50%),
+    linear-gradient(180deg, #F8FAFC 0%, #FFFFFF 100%);
+}
+
+
+
+/* Background theme-aware */
+.bg-theme {
+  background: var(--background);
+}
+
+.bg-theme-secondary {
+  background: var(--background-secondary);
+}
+
+/* Card com tema */
+.card-theme {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+}
+
+/* Hero Section - Light */
+.hero-gradient {
+  background: linear-gradient(135deg, #F8FAFC 0%, #EEF2FF 50%, #F0FDFA 100%);
+}
+
+
+
+/* Input focus states */
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  ring: 2px;
+  ring-color: var(--uc-roxo);
+}
+
+/* Links */
+a {
+  transition: color 0.2s ease;
+}
+
+/* ========================================
+   SISTEMA DE TEMA GLOBAL - CLASSES UTILITÁRIAS
+   Contraste Inteligente: Roxo no light, Ciano no dark
+   ======================================== */
+
+/* Textos com tema */
+.text-theme {
+  color: var(--foreground);
+}
+
+.text-theme-muted {
+  color: var(--foreground-muted);
+}
+
+/* Cor de destaque INTELIGENTE - usa a variável que muda com tema */
+.text-accent {
+  color: var(--accent-primary);
+}
+
+.text-accent-secondary {
+  color: var(--accent-secondary);
+}
+
+/* Hover inteligente */
+.hover\:text-accent:hover {
+  color: var(--accent-primary);
+}
+
+/* Background de destaque inteligente */
+.bg-accent {
+  background: var(--accent-primary);
+  color: white;
+}
+
+.bg-accent-soft {
+  background: var(--icon-bg);
+}
+
+/* Ícones com fundo que muda com tema */
+.icon-box {
+  background: var(--icon-bg);
+  color: var(--accent-primary);
+}
+
+.icon-box-solid {
+  background: var(--icon-bg-solid);
+  color: white;
+}
+
+/* Badge/Tag inteligente */
+.badge-accent {
+  background: var(--badge-bg);
+  color: var(--badge-text);
+}
+
+/* Botão primário inteligente */
+.btn-accent {
+  background: var(--accent-primary);
+  color: white;
+  font-weight: 700;
+  transition: all 0.3s ease;
+}
+.btn-accent:hover {
+  background: var(--accent-primary-hover);
+  transform: translateY(-1px);
+}
+
+/* Borda de destaque */
+.border-accent {
+  border-color: var(--accent-primary);
+}
+
+/* Ring/Focus de destaque */
+.ring-accent {
+  --tw-ring-color: var(--accent-primary);
+}
+
+/* Focus state universal */
+.focus-accent:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px var(--icon-bg);
+  border-color: var(--accent-primary);
+}
+
+.bg-accent {
+  background: var(--uc-roxo);
+}
+
+/* Cards com tema - padrão para todo o site */
+.card-theme {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Seção com tema alternado */
+.section-theme {
+  background: var(--background);
+}
+
+.section-theme-alt {
+  background: var(--background-secondary);
+}
+
+/* Inputs com tema */
+.input-theme {
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  color: var(--foreground);
+}
+
+.input-theme::placeholder {
+  color: var(--foreground-muted);
+}
+
+.input-theme:focus {
+  border-color: var(--uc-roxo);
+  box-shadow: 0 0 0 3px rgba(119, 50, 166, 0.1);
+}
+
+/* Divisores com tema */
+.divider-theme {
+  border-color: var(--card-border);
+}
+
+/* Badge/Tag com tema */
+.badge-theme {
+  background: rgba(119, 50, 166, 0.1);
+  color: var(--uc-roxo);
+}
+
+/* Hover states para cards */
+.card-theme-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-theme-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 40px -10px rgba(119, 50, 166, 0.15);
+}
+
+/* Gradiente de fundo para seções hero sem cor sólida */
+.section-hero {
+  position: relative;
+}
+
+.section-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--gradient-hero);
+  pointer-events: none;
+}
+
+/* Loading skeleton */
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+}
+
+@keyframes skeleton-loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }

@@ -1,9 +1,11 @@
 import { client, urlFor } from "@/lib/sanity";
 import { PortableText } from "@portabletext/react";
 import VideoPlayer from "@/app/components/VideoPlayer";
+import ProtectedDownloadButton from "@/app/components/ProtectedDownloadButton";
 import Link from "next/link";
-import { ArrowLeft, Download, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ShieldCheck, Music2 } from "lucide-react";
 import { Metadata } from "next"; 
+import PageLayout from "@/app/components/PageLayout";
 
 // --- AQUI ESTAVA O ERRO ---
 // No Next.js 15/16, params é uma Promise. Precisamos tipar assim:
@@ -19,7 +21,9 @@ async function getKit(slug: string) {
       difficulty,
       coverImage,
       voices,
-      lyricsAndTips
+      lyricsAndTips,
+      driveLink,
+      "sheetMusicUrl": sheetMusicFile.asset->url
     }
   `, { slug });
 }
@@ -60,81 +64,151 @@ export default async function KitPage({ params }: Props) {
 
   if (!kit) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
-        <h1 className="text-2xl font-bold">Kit não encontrado 😕</h1>
-        <Link href="/" className="text-purple-600 hover:underline">Voltar para o início</Link>
-      </div>
+      <PageLayout>
+        <div className="min-h-screen flex flex-col items-center justify-center gap-4 pt-32">
+          <Music2 size={64} className="text-[var(--foreground-muted)]" />
+          <h1 className="text-2xl font-bold text-[var(--foreground)]" style={{ fontFamily: 'Comfortaa, sans-serif' }}>
+            Kit não encontrado 😕
+          </h1>
+          <Link href="/kits" className="text-[#7732A6] hover:underline">Voltar para Kits</Link>
+        </div>
+      </PageLayout>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#F9FAFB] text-gray-800 pb-20">
-      
-      {/* HEADER DE NAVEGAÇÃO */}
-      <nav className="max-w-7xl mx-auto p-6 flex items-center">
-        <Link href="/" className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-gray-500 hover:text-purple-600 transition">
-          <ArrowLeft size={18} /> Voltar para Home
-        </Link>
-      </nav>
+    <PageLayout>
+      <div className="min-h-screen">
+        {/* Hero do Kit */}
+        <section className="bg-gradient-to-br from-[#7732A6] to-[#5B21B6] py-16 pt-28 px-6">
+          <div className="max-w-6xl mx-auto">
+            <Link 
+              href="/kits" 
+              className="inline-flex items-center gap-2 text-white/70 hover:text-white mb-8 transition-all"
+            >
+              <ArrowLeft size={18} /> Voltar para Kits
+            </Link>
 
-      <main className="max-w-7xl mx-auto px-4 md:px-6 grid grid-cols-1 lg:grid-cols-3 gap-10">
-        
-        {/* COLUNA ESQUERDA */}
-        <div className="lg:col-span-2 space-y-8">
-          <div>
-            <h1 className="text-3xl md:text-5xl font-bold text-gray-900 tracking-tight mb-2">
-              {kit.title}
-            </h1>
-            <p className="text-lg text-gray-500 font-medium uppercase tracking-wide flex items-center gap-2">
-              <span className="bg-purple-100 text-purple-700 text-xs px-2 py-1 rounded">
-                {kit.difficulty === 'facil' ? 'Fácil' : kit.difficulty === 'medio' ? 'Médio' : 'Difícil'}
-              </span>
-              {kit.artist}
-            </p>
+            <div className="flex flex-col md:flex-row gap-8 items-start">
+              {/* Cover Image */}
+              <div className="w-full md:w-64 h-64 rounded-3xl overflow-hidden bg-white/10 flex-shrink-0 shadow-2xl">
+                {kit.coverImage ? (
+                  <img 
+                    src={urlFor(kit.coverImage).width(400).url()} 
+                    alt={kit.title} 
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-white/30">
+                    <Music2 size={64} />
+                  </div>
+                )}
+              </div>
+              
+              {/* Info */}
+              <div className="flex-1">
+                <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold mb-4 ${
+                  kit.difficulty === 'facil' ? 'bg-green-500/20 text-green-200' :
+                  kit.difficulty === 'medio' ? 'bg-yellow-500/20 text-yellow-200' :
+                  'bg-red-500/20 text-red-200'
+                }`}>
+                  {kit.difficulty === 'facil' ? 'Fácil' : kit.difficulty === 'medio' ? 'Médio' : 'Difícil'}
+                </span>
+                <h1 
+                  className="text-3xl md:text-5xl font-bold text-white mb-2"
+                  style={{ fontFamily: 'Comfortaa, sans-serif' }}
+                >
+                  {kit.title}
+                </h1>
+                <p className="text-xl text-white/60 uppercase tracking-wide">
+                  {kit.artist}
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Conteúdo principal */}
+        <section className="py-10 px-6">
+          <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-10">
+            
+            {/* COLUNA ESQUERDA */}
+            <div className="lg:col-span-2 space-y-8">
+              {/* PLAYER */}
+              {kit.voices && <VideoPlayer voices={kit.voices} />}
+
+              {/* LETRA E DICAS */}
+              <div className="bg-[var(--card-bg)] backdrop-blur-sm rounded-3xl p-8 border border-[var(--card-border)] shadow-sm">
+                <h3 
+                  className="text-xl font-bold text-[var(--foreground)] mb-6 flex items-center gap-2"
+                  style={{ fontFamily: 'Comfortaa, sans-serif' }}
+                >
+                  <ShieldCheck className="text-[#7732A6]" />
+                  Dicas e Letra
+                </h3>
+                {kit.lyricsAndTips ? (
+                  <div className="prose prose-gray prose-p:text-gray-600 max-w-none">
+                    <PortableText value={kit.lyricsAndTips} />
+                  </div>
+                ) : (
+                  <p className="text-[var(--foreground-muted)] italic">Nenhuma dica cadastrada para este kit ainda.</p>
+              )}
+            </div>
           </div>
 
-          {/* PLAYER */}
-          {kit.voices && <VideoPlayer voices={kit.voices} />}
-
-          {/* ADSENSE HORIZONTAL */}
-          <div className="w-full h-32 bg-gray-200 rounded-lg flex items-center justify-center text-gray-400 text-sm border-2 border-dashed border-gray-300">
-            Espaço Publicitário (Google AdSense)
-          </div>
-
-          {/* LETRA E DICAS */}
-          <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 prose prose-purple max-w-none">
-            <h3 className="text-2xl font-bold mb-6 flex items-center gap-2">
-              <ShieldCheck className="text-purple-500" />
-              Dicas e Letra
-            </h3>
-            {kit.lyricsAndTips ? (
-              <PortableText value={kit.lyricsAndTips} />
-            ) : (
-              <p className="text-gray-400 italic">Nenhuma dica cadastrada para este kit ainda.</p>
+          {/* COLUNA DIREITA */}
+          <aside className="space-y-6">
+            {/* Downloads Protegidos */}
+            {(kit.driveLink || kit.sheetMusicUrl) && (
+              <div className="bg-gradient-to-b from-[#7732A6] to-[#5B21B6] text-white p-6 rounded-3xl shadow-xl">
+                <h3 className="text-xl font-bold mb-2" style={{ fontFamily: 'Comfortaa, sans-serif' }}>
+                  📂 Materiais do Kit
+                </h3>
+                <p className="text-white/80 text-sm mb-6">
+                  Faça login para acessar os materiais completos deste kit.
+                </p>
+                
+                <div className="space-y-3">
+                  {kit.driveLink && (
+                    <ProtectedDownloadButton
+                      type="drive"
+                      url={kit.driveLink}
+                      itemName={`${kit.title} - ${kit.artist}`}
+                      className="w-full"
+                    />
+                  )}
+                  
+                  {kit.sheetMusicUrl && (
+                    <ProtectedDownloadButton
+                      type="sheet"
+                      url={kit.sheetMusicUrl}
+                      itemName={`Partitura: ${kit.title}`}
+                      className="w-full"
+                    />
+                  )}
+                </div>
+              </div>
             )}
-          </div>
+
+            {/* Box de Apoio Fixo */}
+            <div className="bg-[var(--card-bg)] p-6 rounded-3xl border border-[var(--card-border)]">
+              <h3 className="text-lg font-bold text-[var(--foreground)] mb-2" style={{ fontFamily: 'Comfortaa, sans-serif' }}>
+                💜 Apoie o Projeto
+              </h3>
+              <p className="text-sm text-[var(--foreground-muted)] mb-4">
+                Todos os kits são gratuitos! Ajude-nos a continuar produzindo conteúdo.
+              </p>
+              <Link
+                href="/apoie"
+                className="block w-full text-center py-2 px-4 bg-[var(--card-border)] hover:bg-[#7732A6] hover:text-white text-[var(--foreground)] rounded-xl font-semibold transition"
+              >
+                Saiba como ajudar →
+              </Link>
+            </div>
+          </aside>
         </div>
-
-        {/* COLUNA DIREITA */}
-        <aside className="space-y-6">
-          <div className="bg-indigo-900 text-white p-6 rounded-2xl shadow-xl">
-            <h3 className="text-xl font-bold mb-2">Precisa dos Arquivos?</h3>
-            <p className="text-indigo-200 text-sm mb-6">
-              Baixe os áudios em MP3 e as Cifras Vocalizadas.
-            </p>
-            <button className="w-full bg-white text-indigo-900 font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 hover:bg-indigo-50 transition">
-              <Download size={20} />
-              Baixar Material
-            </button>
-          </div>
-
-           {/* ADSENSE VERTICAL */}
-           <div className="w-full h-[600px] bg-gray-200 rounded-lg flex items-center justify-center text-gray-400 text-sm border-2 border-dashed border-gray-300 sticky top-10">
-            Publicidade Vertical
-          </div>
-        </aside>
-
-      </main>
-    </div>
+      </section>
+      </div>
+    </PageLayout>
   );
 }

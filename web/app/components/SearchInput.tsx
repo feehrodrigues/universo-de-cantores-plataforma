@@ -18,13 +18,13 @@ export default function SearchInput() {
   return (
     <form onSubmit={handleSearch} className="w-full max-w-2xl relative group">
       <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-        <Search className="h-6 w-6 text-gray-800" strokeWidth={2} />
+        <Search className="h-6 w-6 text-[#7732A6]" strokeWidth={2} />
       </div>
       <input
         type="text"
         value={term}
         onChange={(e) => setTerm(e.target.value)}
-        className="block w-full p-5 pl-14 text-sm md:text-base text-gray-900 border border-gray-300 rounded-full bg-white/50 backdrop-blur-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent focus:bg-white transition-all shadow-lg hover:shadow-xl placeholder-gray-500 uppercase tracking-wide"
+        className="block w-full p-5 pl-14 text-sm md:text-base text-gray-900 border border-gray-300 rounded-full bg-white/90 backdrop-blur-sm focus:ring-2 focus:ring-[#7732A6] focus:border-transparent focus:bg-white transition-all shadow-lg hover:shadow-xl placeholder-gray-500 uppercase tracking-wide"
         placeholder="Digite o nome da música..."
       />
     </form>
