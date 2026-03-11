@@ -1,5 +1,6 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 // Rotas públicas (não precisam de autenticação)
 const isPublicRoute = createRouteMatcher([
@@ -14,8 +15,13 @@ const isPublicRoute = createRouteMatcher([
   "/blog(.*)",
   "/sobre(.*)",
   "/busca(.*)",
+  "/apoie(.*)",
+  "/esqueci-senha(.*)",
+  "/redefinir-senha(.*)",
   "/api/webhooks(.*)",
   "/api/public(.*)",
+  "/api/auth(.*)",
+  "/api/comments(.*)",
 ]);
 
 // Rotas de admin
@@ -28,33 +34,43 @@ const isTeacherRoute = createRouteMatcher(["/teacher(.*)"]);
 const isStudentRoute = createRouteMatcher(["/student(.*)", "/dashboard(.*)", "/sala(.*)"]);
 
 export default clerkMiddleware(async (auth, req) => {
-  const { userId, sessionClaims } = await auth();
-  
-  // Rotas públicas - permitir acesso
-  if (isPublicRoute(req)) {
+  try {
+    // Rotas públicas - permitir acesso imediatamente
+    if (isPublicRoute(req)) {
+      return NextResponse.next();
+    }
+    
+    const { userId, sessionClaims } = await auth();
+    
+    // Se não está logado, redirecionar para login
+    if (!userId) {
+      const signInUrl = new URL("/login", req.url);
+      signInUrl.searchParams.set("redirect_url", req.url);
+      return NextResponse.redirect(signInUrl);
+    }
+    
+    // Verificar role do usuário (definido via metadata no Clerk)
+    const userRole = (sessionClaims?.metadata as any)?.role || "student";
+    
+    // Proteção de rotas por role
+    if (isAdminRoute(req) && userRole !== "admin") {
+      return NextResponse.redirect(new URL("/dashboard", req.url));
+    }
+    
+    if (isTeacherRoute(req) && userRole !== "teacher" && userRole !== "admin") {
+      return NextResponse.redirect(new URL("/dashboard", req.url));
+    }
+    
     return NextResponse.next();
+  } catch (error) {
+    // Em caso de erro, permite acesso a rotas públicas
+    if (isPublicRoute(req)) {
+      return NextResponse.next();
+    }
+    // Para outras rotas, redireciona para login
+    console.error("Middleware error:", error);
+    return NextResponse.redirect(new URL("/login", req.url));
   }
-  
-  // Se não está logado, redirecionar para login
-  if (!userId) {
-    const signInUrl = new URL("/login", req.url);
-    signInUrl.searchParams.set("redirect_url", req.url);
-    return NextResponse.redirect(signInUrl);
-  }
-  
-  // Verificar role do usuário (definido via metadata no Clerk)
-  const userRole = (sessionClaims?.metadata as any)?.role || "student";
-  
-  // Proteção de rotas por role
-  if (isAdminRoute(req) && userRole !== "admin") {
-    return NextResponse.redirect(new URL("/dashboard", req.url));
-  }
-  
-  if (isTeacherRoute(req) && userRole !== "teacher" && userRole !== "admin") {
-    return NextResponse.redirect(new URL("/dashboard", req.url));
-  }
-  
-  return NextResponse.next();
 });
 
 export const config = {
