@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FileText, CheckCircle, AlertCircle, Loader2, ArrowLeft, Camera } from "lucide-react";
@@ -103,7 +103,7 @@ const DEFAULT_CONTRACTS: ContractType[] = [
   }
 ];
 
-export default function ContratosPage() {
+function ContratosContent() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -170,169 +170,179 @@ export default function ContratosPage() {
 
   if (status === "loading") {
     return (
-      <PageLayout>
-        <div className="min-h-screen flex items-center justify-center">
-          <Loader2 className="animate-spin text-purple-600" size={40} />
-        </div>
-      </PageLayout>
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="animate-spin text-purple-600" size={40} />
+      </div>
     );
   }
 
   return (
-    <PageLayout>
-      <div className="min-h-screen py-12">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          
-          {/* Header */}
-          <div className="mb-8">
-            <Link 
-              href="/dashboard" 
-              className="inline-flex items-center gap-2 text-[var(--foreground-muted)] hover:text-[var(--foreground)] transition-colors text-sm mb-4"
-            >
-              <ArrowLeft size={16} />
-              Voltar ao Dashboard
-            </Link>
-            <h1 className="text-3xl font-bold text-[var(--foreground)]" style={{ fontFamily: 'Comfortaa, sans-serif' }}>
-              Contratos e Termos
-            </h1>
-            <p className="text-[var(--foreground-muted)] mt-2">
-              Leia e aceite os contratos necessários para utilizar a plataforma.
-            </p>
-          </div>
+    <div className="min-h-screen py-12">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* Header */}
+        <div className="mb-8">
+          <Link 
+            href="/dashboard" 
+            className="inline-flex items-center gap-2 text-[var(--foreground-muted)] hover:text-[var(--foreground)] transition-colors text-sm mb-4"
+          >
+            <ArrowLeft size={16} />
+            Voltar ao Dashboard
+          </Link>
+          <h1 className="text-3xl font-bold text-[var(--foreground)]" style={{ fontFamily: 'Comfortaa, sans-serif' }}>
+            Contratos e Termos
+          </h1>
+          <p className="text-[var(--foreground-muted)] mt-2">
+            Leia e aceite os contratos necessários para utilizar a plataforma.
+          </p>
+        </div>
 
-          {/* Lista de Contratos */}
-          {!selectedContract ? (
-            <div className="grid gap-4">
-              {contracts.map((contract) => {
-                const isSigned = signedContracts.includes(contract.type);
-                return (
-                  <div
-                    key={contract.id}
-                    className={`bg-[var(--card-bg)] border border-[var(--card-border)] rounded-2xl p-6 transition-all ${
-                      isSigned ? "opacity-75" : "hover:shadow-lg cursor-pointer"
-                    }`}
-                    onClick={() => !isSigned && setSelectedContract(contract)}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
-                          contract.type === "terms" ? "bg-purple-100 text-purple-600" : "bg-pink-100 text-pink-600"
-                        }`}>
-                          {contract.type === "terms" ? <FileText size={24} /> : <Camera size={24} />}
-                        </div>
-                        <div>
-                          <h3 className="font-bold text-[var(--foreground)]">{contract.title}</h3>
-                          <p className="text-sm text-[var(--foreground-muted)]">
-                            {isSigned ? "✓ Assinado" : "Clique para ler e assinar"}
-                          </p>
-                        </div>
-                      </div>
-                      {isSigned ? (
-                        <CheckCircle className="text-green-500" size={24} />
-                      ) : (
-                        <AlertCircle className="text-amber-500" size={24} />
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            /* Visualização do Contrato */
-            <div className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-2xl overflow-hidden">
-              {/* Header do Contrato */}
-              <div className="bg-gradient-to-r from-[#7732A6] to-[#F252BA] p-6 text-white">
-                <button
-                  onClick={() => {
-                    setSelectedContract(null);
-                    setAcceptedTerms(false);
-                    setAcceptedImage(false);
-                  }}
-                  className="flex items-center gap-2 text-white/80 hover:text-white transition-colors text-sm mb-4"
+        {/* Lista de Contratos */}
+        {!selectedContract ? (
+          <div className="grid gap-4">
+            {contracts.map((contract) => {
+              const isSigned = signedContracts.includes(contract.type);
+              return (
+                <div
+                  key={contract.id}
+                  className={`bg-[var(--card-bg)] border border-[var(--card-border)] rounded-2xl p-6 transition-all ${
+                    isSigned ? "opacity-75" : "hover:shadow-lg cursor-pointer"
+                  }`}
+                  onClick={() => !isSigned && setSelectedContract(contract)}
                 >
-                  <ArrowLeft size={16} />
-                  Voltar
-                </button>
-                <h2 className="text-2xl font-bold" style={{ fontFamily: 'Comfortaa, sans-serif' }}>
-                  {selectedContract.title}
-                </h2>
-              </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                        contract.type === "terms" ? "bg-purple-100 text-purple-600" : "bg-pink-100 text-pink-600"
+                      }`}>
+                        {contract.type === "terms" ? <FileText size={24} /> : <Camera size={24} />}
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-[var(--foreground)]">{contract.title}</h3>
+                        <p className="text-sm text-[var(--foreground-muted)]">
+                          {isSigned ? "✓ Assinado" : "Clique para ler e assinar"}
+                        </p>
+                      </div>
+                    </div>
+                    {isSigned ? (
+                      <CheckCircle className="text-green-500" size={24} />
+                    ) : (
+                      <AlertCircle className="text-amber-500" size={24} />
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          /* Visualização do Contrato */
+          <div className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-2xl overflow-hidden">
+            {/* Header do Contrato */}
+            <div className="bg-gradient-to-r from-[#7732A6] to-[#F252BA] p-6 text-white">
+              <button
+                onClick={() => {
+                  setSelectedContract(null);
+                  setAcceptedTerms(false);
+                  setAcceptedImage(false);
+                }}
+                className="flex items-center gap-2 text-white/80 hover:text-white transition-colors text-sm mb-4"
+              >
+                <ArrowLeft size={16} />
+                Voltar
+              </button>
+              <h2 className="text-2xl font-bold" style={{ fontFamily: 'Comfortaa, sans-serif' }}>
+                {selectedContract.title}
+              </h2>
+            </div>
 
-              {/* Conteúdo do Contrato */}
-              <div 
-                className="p-6 md:p-8 max-h-[50vh] overflow-y-auto prose prose-slate max-w-none contract-content"
-                dangerouslySetInnerHTML={{ __html: selectedContract.content }}
-              />
+            {/* Conteúdo do Contrato */}
+            <div 
+              className="p-6 md:p-8 max-h-[50vh] overflow-y-auto prose prose-slate max-w-none contract-content"
+              dangerouslySetInnerHTML={{ __html: selectedContract.content }}
+            />
 
-              {/* Aceite */}
-              <div className="p-6 border-t border-[var(--card-border)] bg-[var(--background-secondary)]">
-                <div className="space-y-4">
+            {/* Aceite */}
+            <div className="p-6 border-t border-[var(--card-border)] bg-[var(--background-secondary)]">
+              <div className="space-y-4">
+                <label className="flex items-start gap-3 cursor-pointer group">
+                  <input
+                    type="checkbox"
+                    checked={acceptedTerms}
+                    onChange={(e) => setAcceptedTerms(e.target.checked)}
+                    className="mt-1 w-5 h-5 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                  />
+                  <span className="text-sm text-[var(--foreground)]">
+                    <strong>Li e aceito</strong> os termos descritos acima. Declaro que estou ciente de todas as condições e concordo em cumpri-las.
+                  </span>
+                </label>
+
+                {selectedContract.type === "image" && (
                   <label className="flex items-start gap-3 cursor-pointer group">
                     <input
                       type="checkbox"
-                      checked={acceptedTerms}
-                      onChange={(e) => setAcceptedTerms(e.target.checked)}
-                      className="mt-1 w-5 h-5 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                      checked={acceptedImage}
+                      onChange={(e) => setAcceptedImage(e.target.checked)}
+                      className="mt-1 w-5 h-5 rounded border-gray-300 text-pink-600 focus:ring-pink-500"
                     />
                     <span className="text-sm text-[var(--foreground)]">
-                      <strong>Li e aceito</strong> os termos descritos acima. Declaro que estou ciente de todas as condições e concordo em cumpri-las.
+                      <strong>Autorizo</strong> o uso da minha imagem e voz conforme descrito neste termo.
                     </span>
                   </label>
-
-                  {selectedContract.type === "image" && (
-                    <label className="flex items-start gap-3 cursor-pointer group">
-                      <input
-                        type="checkbox"
-                        checked={acceptedImage}
-                        onChange={(e) => setAcceptedImage(e.target.checked)}
-                        className="mt-1 w-5 h-5 rounded border-gray-300 text-pink-600 focus:ring-pink-500"
-                      />
-                      <span className="text-sm text-[var(--foreground)]">
-                        <strong>Autorizo</strong> o uso da minha imagem e voz conforme descrito neste termo.
-                      </span>
-                    </label>
-                  )}
-                </div>
-
-                <button
-                  onClick={handleSign}
-                  disabled={loading || !acceptedTerms || (selectedContract.type === "image" && !acceptedImage)}
-                  className={`w-full mt-6 py-4 px-6 rounded-xl font-bold text-white transition-all flex items-center justify-center gap-2 ${
-                    success
-                      ? "bg-green-500"
-                      : acceptedTerms && (selectedContract.type !== "image" || acceptedImage)
-                        ? "bg-gradient-to-r from-[#7732A6] to-[#F252BA] hover:opacity-90"
-                        : "bg-gray-300 cursor-not-allowed"
-                  }`}
-                >
-                  {loading ? (
-                    <Loader2 size={20} className="animate-spin" />
-                  ) : success ? (
-                    <>
-                      <CheckCircle size={20} />
-                      Contrato Assinado!
-                    </>
-                  ) : (
-                    <>
-                      <FileText size={20} />
-                      Assinar Contrato
-                    </>
-                  )}
-                </button>
+                )}
               </div>
+
+              <button
+                onClick={handleSign}
+                disabled={loading || !acceptedTerms || (selectedContract.type === "image" && !acceptedImage)}
+                className={`w-full mt-6 py-4 px-6 rounded-xl font-bold text-white transition-all flex items-center justify-center gap-2 ${
+                  success
+                    ? "bg-green-500"
+                    : acceptedTerms && (selectedContract.type !== "image" || acceptedImage)
+                      ? "bg-gradient-to-r from-[#7732A6] to-[#F252BA] hover:opacity-90"
+                      : "bg-gray-300 cursor-not-allowed"
+                }`}
+              >
+                {loading ? (
+                  <Loader2 size={20} className="animate-spin" />
+                ) : success ? (
+                  <>
+                    <CheckCircle size={20} />
+                    Contrato Assinado!
+                  </>
+                ) : (
+                  <>
+                    <FileText size={20} />
+                    Assinar Contrato
+                  </>
+                )}
+              </button>
             </div>
-          )}
-
-          {/* Informação sobre contratos */}
-          <div className="mt-8 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl">
-            <p className="text-sm text-purple-700 dark:text-purple-300">
-              <strong>Importante:</strong> A assinatura destes contratos é necessária para a utilização completa dos serviços da plataforma. 
-              Seus dados são protegidos conforme a LGPD.
-            </p>
           </div>
+        )}
 
+        {/* Informação sobre contratos */}
+        <div className="mt-8 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl">
+          <p className="text-sm text-purple-700 dark:text-purple-300">
+            <strong>Importante:</strong> A assinatura destes contratos é necessária para a utilização completa dos serviços da plataforma. 
+            Seus dados são protegidos conforme a LGPD.
+          </p>
         </div>
+
       </div>
+    </div>
+  );
+}
+
+export default function ContratosPage() {
+  return (
+    <PageLayout>
+      <Suspense fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <Loader2 className="animate-spin text-purple-600" size={40} />
+        </div>
+      }>
+        <ContratosContent />
+      </Suspense>
 
       <style jsx global>{`
         .contract-content h2 {
