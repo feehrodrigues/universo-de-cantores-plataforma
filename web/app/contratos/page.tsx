@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import { useSession } from "next-auth/react";
+import { useUser } from "@clerk/nextjs";
 import { useRouter, useSearchParams } from "next/navigation";
 import { FileText, CheckCircle, AlertCircle, Loader2, ArrowLeft, Camera } from "lucide-react";
 import Link from "next/link";
@@ -104,7 +104,7 @@ const DEFAULT_CONTRACTS: ContractType[] = [
 ];
 
 function ContratosContent() {
-  const { data: session, status } = useSession();
+  const { user, isLoaded } = useUser();
   const router = useRouter();
   const searchParams = useSearchParams();
   const contractType = searchParams.get("type") || "all";
@@ -118,11 +118,11 @@ function ContratosContent() {
   const [signedContracts, setSignedContracts] = useState<string[]>([]);
 
   useEffect(() => {
-    if (status === "unauthenticated") {
+    if (isLoaded && !user) {
       router.push("/login");
     }
     // Carregar contratos já assinados
-    if (session?.user?.email) {
+    if (user) {
       fetch("/api/contracts/signed")
         .then(res => res.json())
         .then(data => {
@@ -132,7 +132,7 @@ function ContratosContent() {
         })
         .catch(() => {});
     }
-  }, [status, router, session]);
+  }, [isLoaded, user, router]);
 
   const handleSign = async () => {
     if (!selectedContract) return;
@@ -168,7 +168,7 @@ function ContratosContent() {
     }
   };
 
-  if (status === "loading") {
+  if (!isLoaded) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="animate-spin text-purple-600" size={40} />

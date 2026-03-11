@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import { useUser } from '@clerk/nextjs';
 import { DollarSign, TrendingUp, Loader, BarChart3 } from 'lucide-react';
 
 interface MonthlyData {
@@ -32,7 +32,7 @@ interface EarningsData {
 }
 
 export default function TeacherEarningsPage() {
-  const { data: session } = useSession();
+  const { user } = useUser();
   const [data, setData] = useState<EarningsData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -49,10 +49,10 @@ export default function TeacherEarningsPage() {
       }
     };
 
-    if (session) {
+    if (user) {
       fetchEarnings();
     }
-  }, [session]);
+  }, [user]);
 
   if (loading) {
     return (

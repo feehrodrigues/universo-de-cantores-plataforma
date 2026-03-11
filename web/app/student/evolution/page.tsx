@@ -1,17 +1,17 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import { useUser } from '@clerk/nextjs';
 import { redirect } from 'next/navigation';
 import { TrendingUp, Calendar, Zap, Target, BarChart3 } from 'lucide-react';
 
 export default function Evolution() {
-  const { data: session, status } = useSession();
+  const { user, isLoaded } = useUser();
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (status === 'authenticated') {
+    if (isLoaded && user) {
       fetch('/api/student/evolution')
         .then((r) => r.json())
         .then((data) => {
@@ -19,13 +19,13 @@ export default function Evolution() {
           setLoading(false);
         });
     }
-  }, [status]);
+  }, [isLoaded, user]);
 
-  if (status === 'loading' || loading) {
+  if (!isLoaded || loading) {
     return <div className="p-8">Carregando...</div>;
   }
 
-  if (!session) {
+  if (!user) {
     redirect('/login');
   }
 

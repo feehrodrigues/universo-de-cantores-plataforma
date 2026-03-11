@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
+import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 
 export default function SetupPage() {
-  const { data: session, status } = useSession();
+  const { user, isLoaded } = useUser();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [setupStatus, setSetupStatus] = useState<{
@@ -56,7 +56,7 @@ export default function SetupPage() {
     }
   }
 
-  if (status === 'loading') {
+  if (!isLoaded) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-900 to-purple-700">
         <div className="text-white text-xl">Carregando...</div>
@@ -74,7 +74,7 @@ export default function SetupPage() {
           <h2 className="text-xl text-gray-600">Setup do Sistema</h2>
         </div>
 
-        {!session ? (
+        {!user ? (
           <div className="text-center">
             <p className="text-gray-600 mb-4">
               Você precisa estar logado para configurar o sistema.
@@ -113,8 +113,8 @@ export default function SetupPage() {
 
             <div className="bg-gray-100 p-4 rounded-lg mb-4 text-left">
               <p className="text-sm text-gray-600">Logado como:</p>
-              <p className="font-semibold text-gray-800">{session.user?.name || session.user?.email}</p>
-              <p className="text-sm text-gray-500">{session.user?.email}</p>
+              <p className="font-semibold text-gray-800">{user?.fullName || user?.primaryEmailAddress?.emailAddress}</p>
+              <p className="text-sm text-gray-500">{user?.primaryEmailAddress?.emailAddress}</p>
             </div>
 
             {result?.success && (

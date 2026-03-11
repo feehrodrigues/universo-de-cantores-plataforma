@@ -1,15 +1,14 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { getAuthSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 // POST: Promover usuário a admin ou teacher
 export async function POST(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getAuthSession();
     
     // Verificar se o usuário logado é admin
-    if (!session?.user || (session.user as any).role !== 'admin') {
+    if (!session?.user || session.user.role !== 'admin') {
       return NextResponse.json(
         { error: "Acesso negado. Apenas administradores podem promover usuários." },
         { status: 403 }
@@ -78,10 +77,10 @@ export async function POST(req: Request) {
 // GET: Listar todos os usuários com suas roles
 export async function GET(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getAuthSession();
     
     // Verificar se o usuário logado é admin
-    if (!session?.user || (session.user as any).role !== 'admin') {
+    if (!session?.user || session.user.role !== 'admin') {
       return NextResponse.json(
         { error: "Acesso negado" },
         { status: 403 }

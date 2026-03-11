@@ -3,20 +3,18 @@ import PaymentStatusToggle from "@/app/components/admin/PaymentStatusToggle";
 import { DollarSign, Users, Calendar, CreditCard, Settings } from "lucide-react";
 import PageLayout from "@/app/components/PageLayout";
 import Link from "next/link";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { getAuthSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
 
 export default async function AdminSecretaria() {
   // Verificar se o usuário é admin
-  const session = await getServerSession(authOptions);
+  const session = await getAuthSession();
   
   if (!session?.user) {
     redirect('/login');
   }
   
-  const userRole = (session.user as any).role;
-  if (userRole !== 'admin') {
+  if (session.user.role !== 'admin') {
     redirect('/dashboard');
   }
 

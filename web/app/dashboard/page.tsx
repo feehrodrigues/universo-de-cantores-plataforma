@@ -1,71 +1,166 @@
-import { getServerSession } from "next-auth/next";
 import { redirect } from "next/navigation";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import Link from "next/link";
-import { Music2, BookOpen, Calendar, Heart, ArrowRight, Settings, FileText, CreditCard, TrendingUp, Clock, Video, AlertCircle, CheckCircle } from "lucide-react";
+import { Music2, BookOpen, Calendar, Heart, ArrowRight, Settings, FileText, CreditCard, TrendingUp, Clock, Video, AlertCircle, CheckCircle, Loader2 } from "lucide-react";
 import PageLayout from "@/app/components/PageLayout";
 import LogoutButton from "@/app/components/LogoutButton";
 import { prisma } from "@/lib/prisma";
 import EvolucaoVocalChart from "@/app/components/EvolucaoVocalChart";
 
-async function getStudentData(email: string) {
-  const user = await prisma.user.findUnique({
-    where: { email },
-    include: {
-      studentProfile: {
-        include: {
-          vocalProfile: true
-        }
-      },
-      classesEnrolled: {
-        where: {
-          scheduledAt: { gte: new Date() }
+async function getOrCreateUser(clerkUserId: string, email: string, name: string, image: string | null) {
+  try {
+    // Primeiro tenta encontrar por email
+    let user = await prisma.user.findUnique({
+      where: { email },
+      include: { 
+        adminProfile: true,
+        studentProfile: {
+          include: { vocalProfile: true }
         },
-        orderBy: { scheduledAt: 'asc' },
-        take: 1,
-        include: {
-          instructor: { select: { name: true } },
-          preBriefing: true
+        classesEnrolled: {
+          where: { scheduledAt: { gte: new Date() } },
+          orderBy: { scheduledAt: 'asc' },
+          take: 1,
+          include: {
+            instructor: { select: { name: true } },
+            preBriefing: true
+          }
+        },
+        contractsSigned: {
+          where: { signedAt: { not: null } },
+          select: { type: true }
+        },
+        purchaseHistory: {
+          where: { paymentStatus: 'pending' },
+          take: 3,
+          orderBy: { paymentDeadline: 'asc' }
         }
-      },
-      contractsSigned: {
-        where: { signedAt: { not: null } },
-        select: { type: true }
-      },
-      purchaseHistory: {
-        where: { paymentStatus: 'pending' },
-        take: 3,
-        orderBy: { paymentDeadline: 'asc' }
       }
+    });
+
+    // Se não existe, cria
+    if (!user) {
+      user = await prisma.user.create({
+        data: {
+          id: clerkUserId,
+          email,
+          name,
+          image,
+        },
+        include: { 
+          adminProfile: true,
+          studentProfile: {
+            include: { vocalProfile: true }
+          },
+          classesEnrolled: {
+            where: { scheduledAt: { gte: new Date() } },
+            orderBy: { scheduledAt: 'asc' },
+            take: 1,
+            include: {
+              instructor: { select: { name: true } },
+              preBriefing: true
+            }
+          },
+          contractsSigned: {
+            where: { signedAt: { not: null } },
+            select: { type: true }
+          },
+          purchaseHistory: {
+            where: { paymentStatus: 'pending' },
+            take: 3,
+            orderBy: { paymentDeadline: 'asc' }
+          }
+        }
+      });
     }
-  });
-  return user;
+
+    return user;
+  } catch (error) {
+    console.error("Error in getOrCreateUser:", error);
+    return null;
+  }
 }
 
 export default async function DashboardPage() {
-  const session = await getServerSession(authOptions);
-
-  if (!session || !session.user?.email) {
+  // Verificar autenticação do Clerk
+  const { userId } = await auth();
+  
+  if (!userId) {
     redirect("/login");
   }
 
-  // Se for admin ou teacher, redireciona para o painel deles
-  if (session.user?.role === 'admin' || session.user?.role === 'teacher') {
+  // Obter dados do usuário do Clerk
+  const clerkUser = await currentUser();
+  
+  if (!clerkUser?.emailAddresses?.[0]?.emailAddress) {
+    // Usuário sem email - mostrar página de erro (NÃO redirecionar)
+    return (
+      <PageLayout>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md text-center">
+            <AlertCircle className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
+            <h1 className="text-2xl font-bold text-gray-800 mb-4">Email não encontrado</h1>
+            <p className="text-gray-600 mb-6">
+              Sua conta não tem um email verificado. Por favor, adicione um email na sua conta.
+            </p>
+            <Link href="/setup" className="bg-purple-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-purple-500 transition-colors inline-block">
+              Ir para Configuração
+            </Link>
+          </div>
+        </div>
+      </PageLayout>
+    );
+  }
+
+  const email = clerkUser.emailAddresses[0].emailAddress;
+  const name = clerkUser.firstName 
+    ? `${clerkUser.firstName} ${clerkUser.lastName || ""}`.trim() 
+    : "Usuário";
+
+  // Buscar ou criar usuário no banco
+  const dbUser = await getOrCreateUser(userId, email, name, clerkUser.imageUrl || null);
+
+  if (!dbUser) {
+    // Erro no banco - mostrar página de erro (NÃO redirecionar)
+    return (
+      <PageLayout>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md text-center">
+            <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+            <h1 className="text-2xl font-bold text-gray-800 mb-4">Erro temporário</h1>
+            <p className="text-gray-600 mb-6">
+              Não foi possível carregar seus dados. Tente novamente em alguns segundos.
+            </p>
+            <Link 
+              href="/dashboard"
+              className="bg-purple-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-purple-500 transition-colors inline-block"
+            >
+              Tentar novamente
+            </Link>
+          </div>
+        </div>
+      </PageLayout>
+    );
+  }
+
+  // Verificar se é admin/teacher
+  const role = dbUser.adminProfile?.role;
+  if (role === 'admin' || role === 'teacher') {
     redirect("/teacher");
   }
 
-  const studentData = await getStudentData(session.user.email);
-  const studentProfile = studentData?.studentProfile;
+  // Dados do estudante
+  const studentProfile = dbUser.studentProfile;
   const vocalProfile = studentProfile?.vocalProfile;
-  const nextClass = studentData?.classesEnrolled[0];
-  const signedContracts = studentData?.contractsSigned?.map((c: { type: string }) => c.type) || [];
-  const pendingPayments = studentData?.purchaseHistory || [];
+  const nextClass = dbUser.classesEnrolled[0];
+  const signedContracts = dbUser.contractsSigned?.map((c: { type: string }) => c.type) || [];
+  const pendingPayments = dbUser.purchaseHistory || [];
 
   const hasSignedTerms = signedContracts.includes('terms');
   const hasSignedImage = signedContracts.includes('image');
 
   return (
-    <PageLayout >
+    <PageLayout>
       <div className="min-h-screen">
         {/* Header */}
         <div className="bg-gradient-to-r from-[#7732A6] to-[#5B21B6] text-white py-12">
@@ -74,7 +169,7 @@ export default async function DashboardPage() {
               <div>
                 <p className="text-white/80 text-sm mb-1">Bem-vindo(a) de volta,</p>
                 <h1 className="text-3xl font-bold" style={{ fontFamily: 'Comfortaa, sans-serif' }}>
-                  {session.user?.name || 'Visitante'}
+                  {dbUser.name || 'Visitante'}
                 </h1>
               </div>
               <LogoutButton />

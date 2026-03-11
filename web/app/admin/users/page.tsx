@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSession } from "next-auth/react";
+import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
@@ -16,24 +16,25 @@ interface User {
 }
 
 export default function UsersPage() {
-  const { data: session, status } = useSession();
+  const { user, isLoaded } = useUser();
   const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  const userRole = (session?.user as any)?.role;
+  const userRole = (user?.publicMetadata as any)?.role || (user?.unsafeMetadata as any)?.role || 'student';
+  const currentUserEmail = user?.primaryEmailAddress?.emailAddress;
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
+    if (isLoaded && !user) {
       router.push('/login');
-    } else if (status === 'authenticated' && userRole !== 'admin') {
+    } else if (isLoaded && userRole !== 'admin') {
       router.push('/dashboard');
-    } else if (status === 'authenticated' && userRole === 'admin') {
+    } else if (isLoaded && userRole === 'admin') {
       fetchUsers();
     }
-  }, [status, userRole]);
+  }, [isLoaded, user, userRole]);
 
   async function fetchUsers() {
     try {
@@ -78,7 +79,7 @@ export default function UsersPage() {
     }
   }
 
-  if (status === 'loading' || loading) {
+  if (!isLoaded || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[var(--background)]">
         <div className="text-xl text-[var(--foreground-muted)]">Carregando...</div>
@@ -194,7 +195,7 @@ export default function UsersPage() {
                       <select
                         value={user.role}
                         onChange={(e) => handleRoleChange(user.id, e.target.value)}
-                        disabled={updating === user.id || user.email === session?.user?.email}
+                        disabled={updating === user.id || user.email === currentUserEmail}
                         className={`
                           px-3 py-2 rounded-lg border border-[var(--input-border)]
                           bg-[var(--input-bg)] text-[var(--foreground)]
@@ -207,7 +208,7 @@ export default function UsersPage() {
                         <option value="teacher">👨‍🏫 Professor</option>
                         <option value="admin">👑 Admin</option>
                       </select>
-                      {user.email === session?.user?.email && (
+                      {user.email === currentUserEmail && (
                         <span className="ml-2 text-xs text-gray-400">(você)</span>
                       )}
                     </td>

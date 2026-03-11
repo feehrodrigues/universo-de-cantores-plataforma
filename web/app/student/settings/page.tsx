@@ -1,19 +1,20 @@
 'use client';
 
-import { useSession, signOut } from 'next-auth/react';
+import { useUser, useClerk } from '@clerk/nextjs';
 import { redirect } from 'next/navigation';
 import { User, Lock, Bell, FileText, Trash2, LogOut } from 'lucide-react';
 import { useState } from 'react';
 
 export default function Settings() {
-  const { data: session, status } = useSession();
+  const { user, isLoaded } = useUser();
+  const { signOut } = useClerk();
   const [activeTab, setActiveTab] = useState('profile');
 
-  if (status === 'loading') {
+  if (!isLoaded) {
     return <div className="p-8">Carregando...</div>;
   }
 
-  if (!session) {
+  if (!user) {
     redirect('/login');
   }
 
@@ -62,7 +63,7 @@ export default function Settings() {
                   <label className="block text-sm font-black text-[var(--foreground)] mb-2">Nome Completo</label>
                   <input
                     type="text"
-                    defaultValue={session.user?.name || ''}
+                    defaultValue={user?.fullName || ''}
                     className="w-full px-4 py-3 border border-[var(--card-border)] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#7732A6] font-bold bg-[var(--card-bg)] text-[var(--foreground)]"
                   />
                 </div>
@@ -71,7 +72,7 @@ export default function Settings() {
                   <label className="block text-sm font-black text-[var(--foreground)] mb-2">E-mail</label>
                   <input
                     type="email"
-                    defaultValue={session.user?.email || ''}
+                    defaultValue={user?.primaryEmailAddress?.emailAddress || ''}
                     disabled
                     className="w-full px-4 py-3 border border-[var(--card-border)] rounded-lg bg-slate-50 text-[var(--foreground-muted)] font-bold cursor-not-allowed"
                   />

@@ -18,20 +18,14 @@ const isPublicRoute = createRouteMatcher([
   "/apoie(.*)",
   "/esqueci-senha(.*)",
   "/redefinir-senha(.*)",
+  "/setup(.*)",
+  "/onboarding(.*)",
   "/api/webhooks(.*)",
   "/api/public(.*)",
   "/api/auth(.*)",
+  "/api/admin/setup(.*)",
   "/api/comments(.*)",
 ]);
-
-// Rotas de admin
-const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
-
-// Rotas de professor
-const isTeacherRoute = createRouteMatcher(["/teacher(.*)"]);
-
-// Rotas de aluno
-const isStudentRoute = createRouteMatcher(["/student(.*)", "/dashboard(.*)", "/sala(.*)"]);
 
 export default clerkMiddleware(async (auth, req) => {
   try {
@@ -40,7 +34,7 @@ export default clerkMiddleware(async (auth, req) => {
       return NextResponse.next();
     }
     
-    const { userId, sessionClaims } = await auth();
+    const { userId } = await auth();
     
     // Se não está logado, redirecionar para login
     if (!userId) {
@@ -49,18 +43,8 @@ export default clerkMiddleware(async (auth, req) => {
       return NextResponse.redirect(signInUrl);
     }
     
-    // Verificar role do usuário (definido via metadata no Clerk)
-    const userRole = (sessionClaims?.metadata as any)?.role || "student";
-    
-    // Proteção de rotas por role
-    if (isAdminRoute(req) && userRole !== "admin") {
-      return NextResponse.redirect(new URL("/dashboard", req.url));
-    }
-    
-    if (isTeacherRoute(req) && userRole !== "teacher" && userRole !== "admin") {
-      return NextResponse.redirect(new URL("/dashboard", req.url));
-    }
-    
+    // Usuário logado - permitir acesso
+    // A verificação de role é feita dentro de cada página (mais seguro)
     return NextResponse.next();
   } catch (error) {
     // Em caso de erro, permite acesso a rotas públicas

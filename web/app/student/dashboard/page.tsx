@@ -1,19 +1,19 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
+import { useUser } from '@clerk/nextjs';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Mic2, BookOpen, TrendingUp, Calendar, Plus, ArrowRight, Star, Zap, Loader, ShieldCheck } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 export default function StudentDashboard() {
-  const { data: session, status } = useSession();
+  const { user, isLoaded } = useUser();
   const [dashboardData, setDashboardData] = useState<any>(null);
   const [classes, setClasses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (status === 'authenticated') {
+    if (isLoaded && user) {
       const loadAllData = async () => {
         try {
           const [dashRes, classRes] = await Promise.all([
@@ -35,12 +35,12 @@ export default function StudentDashboard() {
         }
       };
       loadAllData();
-    } else if (status === 'unauthenticated') {
+    } else if (isLoaded && !user) {
       redirect('/login');
     }
-  }, [status]);
+  }, [isLoaded, user]);
 
-  if (status === 'loading' || loading) {
+  if (!isLoaded || loading) {
     return (
       <div className="flex flex-col items-center justify-center h-screen bg-[var(--background)]">
         <Loader className="animate-spin text-purple-600 mb-4" size={40} />
@@ -66,7 +66,7 @@ export default function StudentDashboard() {
       <div className="mb-12">
         <p className="text-[10px] font-black text-purple-600 uppercase tracking-[0.4em] mb-2">Universo de Cantores</p>
         <h1 className="text-5xl font-black tracking-tighter">
-          Olá, {session?.user?.name?.split(' ')[0]}.
+          Olá, {user?.firstName || 'Aluno'}.
         </h1>
       </div>
 

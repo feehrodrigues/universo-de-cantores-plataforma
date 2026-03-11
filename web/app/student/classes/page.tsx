@@ -1,20 +1,20 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
+import { useUser } from '@clerk/nextjs';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { Calendar, MapPin, Clock, Plus, Filter, Search, ChevronRight, Loader } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 export default function MyClasses() {
-  const { data: session, status } = useSession();
+  const { user, isLoaded } = useUser();
   const [filterStatus, setFilterStatus] = useState('todas');
   const [searchTerm, setSearchTerm] = useState('');
   const [classes, setClasses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (status === 'authenticated') {
+    if (isLoaded && user) {
       fetch('/api/student/classes')
         .then((r) => r.json())
         .then((data) => {
@@ -22,9 +22,9 @@ export default function MyClasses() {
           setLoading(false);
         });
     }
-  }, [status]);
+  }, [isLoaded, user]);
 
-  if (status === 'loading' || loading) {
+  if (!isLoaded || loading) {
     return (
       <div className="p-8 flex items-center justify-center h-screen">
         <Loader className="animate-spin text-[#7732A6]" size={40} />
@@ -32,7 +32,7 @@ export default function MyClasses() {
     );
   }
 
-  if (!session) {
+  if (!user) {
     redirect('/login');
   }
 

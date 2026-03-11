@@ -1,11 +1,11 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
+import { useUser } from '@clerk/nextjs';
 import { redirect, useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 export default function BriefingPage() {
-  const { data: session, status } = useSession();
+  const { user, isLoaded } = useUser();
   const params = useParams();
   const classId = params.classId as string;
   const [briefing, setBriefing] = useState<any>(null);
@@ -19,7 +19,7 @@ export default function BriefingPage() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (status === 'authenticated' && classId) {
+    if (isLoaded && user && classId) {
       fetch(`/api/briefing?classId=${classId}`)
         .then((r) => r.json())
         .then((data) => {
@@ -35,12 +35,12 @@ export default function BriefingPage() {
           }
         });
     }
-  }, [status, classId]);
+  }, [isLoaded, user, classId]);
 
-  if (status === 'loading') {
+  if (!isLoaded) {
     return <div className="p-8">Carregando...</div>;
   }
-  if (!session) {
+  if (!user) {
     redirect('/login');
   }
 

@@ -1,12 +1,11 @@
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { getAuthSession } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { redirect } from 'next/navigation';
 import { Calendar, Users, TrendingUp, DollarSign, BookOpen, Play, Clock } from 'lucide-react';
 import Link from 'next/link';
 
 export default async function TeacherDashboard() {
-  const session = await getServerSession(authOptions);
+  const session = await getAuthSession();
 
   if (!session?.user?.email) {
     redirect('/login');

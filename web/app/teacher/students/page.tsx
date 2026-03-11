@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import { useUser } from '@clerk/nextjs';
 import Link from 'next/link';
 import { Users, Loader, Star, Mail } from 'lucide-react';
 
@@ -28,7 +28,7 @@ interface StudentStats {
 }
 
 export default function TeacherStudentsPage() {
-  const { data: session } = useSession();
+  const { user } = useUser();
   const [data, setData] = useState<StudentStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -46,10 +46,10 @@ export default function TeacherStudentsPage() {
       }
     };
 
-    if (session) {
+    if (user) {
       fetchStudents();
     }
-  }, [session]);
+  }, [user]);
 
   const filteredStudents = data?.students.filter(
     (student) =>

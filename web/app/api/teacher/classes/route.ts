@@ -1,19 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { getAuthSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getAuthSession();
     
     if (!session?.user) {
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
     }
 
     // Verificar role pela session
-    const userRole = (session.user as any).role;
-    if (userRole !== "teacher" && userRole !== "admin") {
+    if (session.user.role !== "teacher" && session.user.role !== "admin") {
       return NextResponse.json({ error: "Acesso negado" }, { status: 403 });
     }
 
@@ -34,7 +32,7 @@ export async function GET(request: NextRequest) {
     const whereClause: any = {};
 
     // Se for professor, filtrar apenas suas aulas
-    if (userRole === "teacher") {
+    if (session.user.role === "teacher") {
       whereClause.instructorId = user.id;
     }
 

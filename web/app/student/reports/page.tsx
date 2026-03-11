@@ -1,19 +1,19 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
+import { useUser } from '@clerk/nextjs';
 import { redirect } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Calendar, Download, Share2, ChevronLeft, Loader } from 'lucide-react';
 
 export default function Reports() {
-  const { data: session, status } = useSession();
+  const { user, isLoaded } = useUser();
   const [reports, setReports] = useState<any[]>([]);
   const [selectedReport, setSelectedReport] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (status === 'authenticated') {
+    if (isLoaded && user) {
       fetch('/api/student/reports')
         .then((r) => r.json())
         .then((data) => {
@@ -22,9 +22,9 @@ export default function Reports() {
           setLoading(false);
         });
     }
-  }, [status]);
+  }, [isLoaded, user]);
 
-  if (status === 'loading' || loading) {
+  if (!isLoaded || loading) {
     return (
       <div className="p-8 flex items-center justify-center h-screen">
         <Loader className="animate-spin text-[#7732A6]" size={40} />
@@ -32,7 +32,15 @@ export default function Reports() {
     );
   }
 
-  if (!session) {
+  if (!isLoaded) {
+    return (
+      <div className="p-8 flex items-center justify-center h-screen">
+        <Loader className="animate-spin text-[#7732A6]" size={40} />
+      </div>
+    );
+  }
+
+  if (!user) {
     redirect('/login');
   }
 

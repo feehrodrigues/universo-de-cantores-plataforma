@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import { useUser } from '@clerk/nextjs';
 import { MessageSquare, Send, User, Loader2, Reply, ChevronDown, ChevronUp } from 'lucide-react';
 import Link from 'next/link';
 
@@ -22,7 +22,7 @@ interface CommentsProps {
 }
 
 export default function BlogComments({ postId }: CommentsProps) {
-  const { data: session } = useSession();
+  const { user } = useUser();
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -114,8 +114,8 @@ export default function BlogComments({ postId }: CommentsProps) {
       <div className="bg-[var(--background-secondary)] rounded-2xl p-6 mb-8">
         <div className="flex items-start gap-4">
           <div className="w-10 h-10 rounded-full bg-[#7732A6]/20 flex items-center justify-center text-[#7732A6] flex-shrink-0">
-            {session?.user?.name ? (
-              <span className="font-bold text-sm">{session.user.name[0].toUpperCase()}</span>
+            {user?.firstName ? (
+              <span className="font-bold text-sm">{user.firstName[0].toUpperCase()}</span>
             ) : (
               <User size={18} />
             )}
@@ -124,8 +124,8 @@ export default function BlogComments({ postId }: CommentsProps) {
             <textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder={session ? "Deixe seu comentário..." : "Faça login para comentar..."}
-              disabled={!session}
+              placeholder={user ? "Deixe seu comentário..." : "Faça login para comentar..."}
+              disabled={!user}
               className="w-full px-4 py-3 border border-[var(--card-border)] rounded-xl bg-[var(--card-bg)] text-[var(--foreground)] focus:outline-none focus:ring-2 focus:ring-[#7732A6] resize-none min-h-[100px] disabled:opacity-50 disabled:cursor-not-allowed"
               maxLength={1000}
             />
@@ -133,7 +133,7 @@ export default function BlogComments({ postId }: CommentsProps) {
               <span className="text-xs text-[var(--foreground-muted)]">
                 {content.length}/1000 caracteres
               </span>
-              {session ? (
+              {user ? (
                 <button
                   type="submit"
                   disabled={submitting || !content.trim()}
@@ -194,7 +194,7 @@ export default function BlogComments({ postId }: CommentsProps) {
                   
                   {/* Botões de ação */}
                   <div className="flex items-center gap-4 mt-3">
-                    {session && (
+                    {user && (
                       <button
                         onClick={() => setReplyingTo(replyingTo === comment._id ? null : comment._id)}
                         className="text-sm text-[var(--foreground-muted)] hover:text-[#7732A6] transition-colors flex items-center gap-1"

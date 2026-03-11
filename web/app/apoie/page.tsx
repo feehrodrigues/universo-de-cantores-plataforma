@@ -9,8 +9,8 @@ export const metadata: Metadata = {
 };
 
 export default function ApoiePage() {
-  // TODO: Configurar as chaves PIX e links reais
-  const pixKey = 'universodecantores@email.com'; // Trocar pela chave PIX real
+  // Chave PIX configurada
+  const pixKey = '11977247792'; // Celular
   const paypalLink = 'https://paypal.me/universodecantores'; // Trocar pelo link real
   const youtubeChannel = 'https://youtube.com/@universodecantores';
 
@@ -93,7 +93,7 @@ export default function ApoiePage() {
                   </p>
                   
                   <div className="bg-[var(--background-secondary)] rounded-2xl p-4 mb-4">
-                    <p className="text-sm text-[var(--foreground-muted)] mb-2">Chave PIX (E-mail):</p>
+                    <p className="text-sm text-[var(--foreground-muted)] mb-2">Chave PIX (Celular):</p>
                     <div className="flex items-center gap-3 flex-wrap">
                       <code className="text-lg font-mono text-[#7732A6] bg-[var(--card-bg)] px-4 py-2 rounded-lg">
                         {pixKey}

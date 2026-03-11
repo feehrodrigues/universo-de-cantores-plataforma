@@ -2,11 +2,10 @@ import Link from 'next/link';
 import { ArrowRight, Search, MessageCircle, ArrowDown, Layers, Play, Youtube, BookOpen } from 'lucide-react';
 import { client, urlFor } from "@/lib/sanity";
 import Image from "next/image";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import BannerCarousel from "@/app/components/BannerCarousel";
 import AdSlot, { AdSection } from "@/app/components/AdSlot";
 import Footer from "@/app/components/Footer";
+import HomeUserButton from "@/app/components/HomeUserButton";
 
 // --- BUSCA DE DADOS ---
 async function getHomeData() {
@@ -44,7 +43,6 @@ async function getHomeData() {
 
 export default async function Home() {
   const data = await getHomeData();
-  const session = await getServerSession(authOptions);
   const config = data.config || {};
 
   // Pré-processar banners com URLs (Server Component)
@@ -81,21 +79,7 @@ export default async function Home() {
             </div>
           </Link>
           <div className="flex items-center gap-3">
-            {session ? (
-              <Link 
-                href={session.user?.role === "admin" || session.user?.role === "teacher" ? "/teacher" : "/dashboard"} 
-                className="btn-primary text-sm"
-              >
-                Meu Painel
-              </Link>
-            ) : (
-              <Link 
-                href="/login" 
-                className="btn-primary text-sm"
-              >
-                Entrar
-              </Link>
-            )}
+            <HomeUserButton />
           </div>
         </header>
 

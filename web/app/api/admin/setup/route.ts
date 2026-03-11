@@ -1,12 +1,11 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { getAuthSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 // POST: Setup inicial - promover usuário atual a admin se não existir nenhum admin
 export async function POST(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getAuthSession();
     
     if (!session?.user?.email) {
       return NextResponse.json(
@@ -73,7 +72,7 @@ export async function POST(req: Request) {
 // GET: Verificar status do setup
 export async function GET(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getAuthSession();
     
     // Verificar se já existe algum admin no sistema
     const existingAdmin = await prisma.adminProfile.findFirst({

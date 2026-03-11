@@ -13,6 +13,16 @@ const nextConfig: NextConfig = {
         hostname: 'img.youtube.com',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'img.clerk.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.clerk.dev',
+        pathname: '/**',
+      },
     ],
   },
 };

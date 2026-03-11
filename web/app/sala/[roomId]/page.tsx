@@ -5,7 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Mic2, Loader2, MessageCircle, Save, User, Target, Music, Heart, Dumbbell, CheckCircle } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
-import { useSession } from "next-auth/react";
+import { useUser } from "@clerk/nextjs";
 
 interface ClassData {
   id: string;
@@ -50,7 +50,7 @@ interface ClassData {
 export default function ClassRoomPage() {
   const router = useRouter();
   const params = useParams();
-  const { data: session, status } = useSession();
+  const { user, isLoaded } = useUser();
   
   const roomId = params.roomId as string;
   const [classData, setClassData] = useState<ClassData | null>(null);
@@ -91,12 +91,12 @@ export default function ClassRoomPage() {
   }, [roomId]);
 
   useEffect(() => {
-    if (status === "unauthenticated") {
+    if (isLoaded && !user) {
       router.push("/login");
-    } else if (status === "authenticated") {
+    } else if (isLoaded && user) {
       fetchClassData();
     }
-  }, [status, router, fetchClassData]);
+  }, [isLoaded, user, router, fetchClassData]);
 
   const saveNotes = async () => {
     setSaving(true);
@@ -118,7 +118,7 @@ export default function ClassRoomPage() {
     }
   };
 
-  if (status === "loading" || loading) {
+  if (!isLoaded || loading) {
     return (
       <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center text-white">
         <Loader2 size={40} className="animate-spin text-purple-500 mb-4" />
@@ -127,12 +127,12 @@ export default function ClassRoomPage() {
     );
   }
 
-  if (status === "unauthenticated") {
+  if (!user) {
     return null;
   }
 
-  const displayName = session?.user?.name || "Tripulante";
-  const userEmail = session?.user?.email || "";
+  const displayName = user?.fullName || user?.firstName || "Tripulante";
+  const userEmail = user?.primaryEmailAddress?.emailAddress || "";
   const student = classData?.students?.[0];
   const briefing = classData?.preBriefing;
 

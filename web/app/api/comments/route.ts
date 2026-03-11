@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { client } from '@/lib/sanity';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { getAuthSession } from '@/lib/auth';
 
 // Sanity client com token para escrita
 const writeClient = client.withConfig({
@@ -44,7 +43,7 @@ export async function GET(request: NextRequest) {
 // POST - Criar novo comentário
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getAuthSession();
     const body = await request.json();
     const { postId, content, parentCommentId } = body;
 

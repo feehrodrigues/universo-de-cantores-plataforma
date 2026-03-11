@@ -2,22 +2,73 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { CalendarDays, MessageSquare, Video, Users, Clock, ArrowRight, CheckCircle2, AlertCircle, Music2, FileText, BookOpen, CreditCard, TrendingUp, Star } from "lucide-react";
 import PageLayout from "@/app/components/PageLayout";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { auth, currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import TeacherActions from "@/app/components/teacher/TeacherActions";
 
 export default async function TeacherHub() {
-  // Verificar se o usuário é admin ou teacher
-  const session = await getServerSession(authOptions);
+  // Verificar autenticação do Clerk
+  const { userId } = await auth();
   
-  if (!session?.user) {
+  if (!userId) {
     redirect('/login');
   }
+
+  // Obter dados do usuário do Clerk
+  const clerkUser = await currentUser();
   
-  const userRole = (session.user as any).role;
-  if (userRole !== 'admin' && userRole !== 'teacher') {
-    redirect('/dashboard');
+  if (!clerkUser?.emailAddresses?.[0]?.emailAddress) {
+    redirect('/login');
+  }
+
+  const email = clerkUser.emailAddresses[0].emailAddress;
+
+  // Buscar usuário no banco com adminProfile
+  let dbUser = await prisma.user.findUnique({
+    where: { email },
+    include: { adminProfile: true }
+  });
+
+  // Se não existe no banco, criar
+  if (!dbUser) {
+    const name = clerkUser.firstName 
+      ? `${clerkUser.firstName} ${clerkUser.lastName || ""}`.trim() 
+      : "Usuário";
+    
+    dbUser = await prisma.user.create({
+      data: {
+        id: userId,
+        email,
+        name,
+        image: clerkUser.imageUrl,
+      },
+      include: { adminProfile: true }
+    });
+  }
+
+  // Verificar se é admin ou teacher - SEM REDIRECT para dashboard (evita loop)
+  const role = dbUser.adminProfile?.role;
+  if (role !== 'admin' && role !== 'teacher') {
+    // Mostrar página de acesso negado em vez de redirecionar
+    return (
+      <PageLayout>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-md text-center">
+            <AlertCircle className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
+            <h1 className="text-2xl font-bold text-gray-800 mb-4">Acesso Restrito</h1>
+            <p className="text-gray-600 mb-6">
+              Esta área é exclusiva para professores e administradores.
+            </p>
+            <Link 
+              href="/dashboard"
+              className="bg-purple-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-purple-500 transition-colors inline-block"
+            >
+              Ir para Meu Painel
+            </Link>
+          </div>
+        </div>
+      </PageLayout>
+    );
   }
 
   // Buscar dados
@@ -86,7 +137,7 @@ export default async function TeacherHub() {
               <div>
                 <p className="text-white/80 text-sm mb-1">Bem-vindo de volta,</p>
                 <h1 className="text-3xl font-bold" style={{ fontFamily: 'Comfortaa, sans-serif' }}>
-                  Professor {session.user?.name?.split(' ')[0] || ''}
+                  Professor {dbUser.name?.split(' ')[0] || ''}
                 </h1>
               </div>
               {todayClasses.length > 0 && (

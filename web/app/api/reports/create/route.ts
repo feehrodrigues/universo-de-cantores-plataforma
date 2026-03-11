@@ -1,19 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { getAuthSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getAuthSession();
     
     if (!session?.user) {
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
     }
 
     // Verificar se é professor pela session
-    const userRole = (session.user as any).role;
-    if (userRole !== "teacher" && userRole !== "admin") {
+    if (session.user.role !== "teacher" && session.user.role !== "admin") {
       return NextResponse.json({ error: "Apenas professores podem criar relatórios" }, { status: 403 });
     }
 

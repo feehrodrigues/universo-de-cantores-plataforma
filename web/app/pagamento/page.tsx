@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+import { useUser } from '@clerk/nextjs';
 import Link from 'next/link';
 import { CreditCard, Loader } from 'lucide-react';
 import PixPaymentComponent from '@/app/components/PixPaymentComponent';
@@ -16,7 +16,7 @@ interface PaymentPlan {
 }
 
 export default function PaymentPage() {
-  const { data: session, status } = useSession();
+  const { user, isLoaded } = useUser();
   const [plans, setPlans] = useState<PaymentPlan[]>([]);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -104,7 +104,7 @@ export default function PaymentPage() {
     }
   };
 
-  if (status === 'loading') {
+  if (!isLoaded) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader className="animate-spin" size={32} />
@@ -112,7 +112,7 @@ export default function PaymentPage() {
     );
   }
 
-  if (status !== 'authenticated') {
+  if (!user) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-6 bg-[var(--background)]">
         <h1 className="text-3xl font-black text-[var(--foreground)]">Acesso Restrito</h1>
