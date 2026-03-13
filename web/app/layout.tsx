@@ -83,7 +83,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <html lang="pt-br" suppressHydrationWarning>
         <head>
          <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3303012659819695"
-     crossorigin="anonymous"></script>
+     crossOrigin="anonymous"></script>
         
           {/* Structured Data - Organization */}
           <script
