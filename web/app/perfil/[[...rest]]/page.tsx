@@ -60,7 +60,6 @@ export default function PerfilPage() {
                 },
                 variables: {
                   
-                  colorTextSecondary: "var(--foreground-muted)",
                   borderRadius: "1rem",
                 },
               }}

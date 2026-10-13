@@ -5316,9 +5316,7 @@ export default function CadastroPage() {
                 socialButtonsVariant: "blockButton",
               },
               variables: {
-                colorPrimary: "#7732A6",
-                colorText: "var(--foreground)",
-                colorTextSecondary: "var(--foreground-muted)",
+                
                 colorBackground: "transparent",
                 colorInputBackground: "var(--input-bg)",
                 colorInputText: "var(--foreground)",
@@ -11433,8 +11431,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       appearance={{
         variables: {
           colorPrimary: "#7732A6",
-          colorText: "#1a1a1a",
-          colorTextSecondary: "#64748b",
+          
           borderRadius: "1rem",
         },
       }}
@@ -11753,8 +11750,7 @@ export default function LoginPage() {
               },
               variables: {
                 colorPrimary: "#7732A6",
-                colorText: "var(--foreground)",
-                colorTextSecondary: "var(--foreground-muted)",
+               
                 colorBackground: "transparent",
                 colorInputBackground: "var(--input-bg)",
                 colorInputText: "var(--foreground)",
@@ -13206,8 +13202,7 @@ export default function PerfilPage() {
                 },
                 variables: {
                   colorPrimary: "#7732A6",
-                  colorText: "var(--foreground)",
-                  colorTextSecondary: "var(--foreground-muted)",
+                  
                   borderRadius: "1rem",
                 },
               }}

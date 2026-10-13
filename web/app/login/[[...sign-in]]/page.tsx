@@ -80,9 +80,7 @@ export default function LoginPage() {
                 socialButtonsVariant: "blockButton",
               },
               variables: {
-                colorPrimary: "#7732A6",
-                colorText: "var(--foreground)",
-                colorTextSecondary: "var(--foreground-muted)",
+            
                 colorBackground: "transparent",
                 colorInputBackground: "var(--input-bg)",
                 colorInputText: "var(--foreground)",

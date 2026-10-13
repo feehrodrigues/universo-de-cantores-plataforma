@@ -73,7 +73,6 @@ export default function CadastroPage() {
               },
               variables: {
                 
-                colorTextSecondary: "var(--foreground-muted)",
                 colorBackground: "transparent",
                 colorInputBackground: "var(--input-bg)",
                 colorInputText: "var(--foreground)",
