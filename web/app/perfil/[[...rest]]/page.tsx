@@ -59,8 +59,7 @@ export default function PerfilPage() {
                   profileSectionContent: "text-[var(--foreground-muted)]",
                 },
                 variables: {
-                  colorPrimary: "#7732A6",
-                  colorText: "var(--foreground)",
+                  
                   colorTextSecondary: "var(--foreground-muted)",
                   borderRadius: "1rem",
                 },

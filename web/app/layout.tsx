@@ -74,8 +74,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       appearance={{
         variables: {
           colorPrimary: "#7732A6",
-          colorText: "#1a1a1a",
-          colorTextSecondary: "#64748b",
           borderRadius: "1rem",
         },
       }}

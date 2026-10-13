@@ -72,8 +72,7 @@ export default function CadastroPage() {
                 socialButtonsVariant: "blockButton",
               },
               variables: {
-                colorPrimary: "#7732A6",
-                colorText: "var(--foreground)",
+                
                 colorTextSecondary: "var(--foreground-muted)",
                 colorBackground: "transparent",
                 colorInputBackground: "var(--input-bg)",
