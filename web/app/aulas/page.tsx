@@ -78,9 +78,9 @@ export default function AulasPage() {
 
   const filteredClasses = filterType === 'todas' ? classes : classes.filter((c) => c.type === filterType);
 
-  const handleSelectPlan = (title: string) => {
-    const message = `Olá! Tenho interesse nas aulas de canto - ${title}. Gostaria de mais informações.`;
-    window.open(`https://wa.me/5511977247792?text=${encodeURIComponent(message)}`, '_blank');
+  // Redirect to payment page with selected plan
+  const handleSelectPlan = (planId: string) => {
+    window.location.href = `/pagamento?plan=${encodeURIComponent(planId)}`;
   };
 
   return (
@@ -228,7 +228,7 @@ export default function AulasPage() {
                 </ul>
 
                 <button
-                  onClick={() => handleSelectPlan(aula.title)}
+                  onClick={() => handleSelectPlan(aula.id)}
                   className={`w-full py-3 px-6 rounded-full font-bold transition-all flex items-center justify-center gap-2 ${
                     aula.highlight
                       ? 'bg-[#F2D338] text-gray-900 hover:bg-[#E5C72F]'

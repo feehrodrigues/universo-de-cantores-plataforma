@@ -128,8 +128,8 @@ model Class {
   id              String                 @id @default(cuid())
   title           String
   description     String?
-  instructorId    String
-  scheduledAt     DateTime
+  instructorId    String?
+  scheduledAt     DateTime?
   duration        Int                    @default(60)
   classType       String                 @default("online")
   paymentStatus   String                 @default("pending")

@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 import Link from 'next/link';
 import { CreditCard, Loader } from 'lucide-react';
@@ -15,8 +16,9 @@ interface PaymentPlan {
   description?: string;
 }
 
-export default function PaymentPage() {
+function PaymentContent() {
   const { user, isLoaded } = useUser();
+  const searchParams = useSearchParams();
   const [plans, setPlans] = useState<PaymentPlan[]>([]);
   const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -28,34 +30,10 @@ export default function PaymentPage() {
   useEffect(() => {
     const fetchPlans = async () => {
       try {
-        // In real scenario, create an API endpoint to get active plans
-        // For now, showing sample plans matching the seed data
-        setPlans([
-          {
-            id: 'plan-1',
-            name: 'Aula Avulsa Online',
-            price: 50,
-            duration: '1 aula',
-            lessonsIncluded: 1,
-            description: 'Uma aula individual online com 60 minutos',
-          },
-          {
-            id: 'plan-2',
-            name: 'Plano Mensal Online',
-            price: 160,
-            duration: 'Mensal',
-            lessonsIncluded: 4,
-            description: '4 aulas de 60 min/mês com plano personalizado',
-          },
-          {
-            id: 'plan-3',
-            name: 'Programa Belting 3M',
-            price: 450,
-            duration: '3 meses',
-            lessonsIncluded: 12,
-            description: '12 aulas em 3 meses com especialista em belting',
-          },
-        ]);
+        const res = await fetch('/api/payment/plans');
+        if (!res.ok) throw new Error('Erro ao buscar planos');
+        const data = await res.json();
+        setPlans(data);
         setLoading(false);
       } catch (error) {
         console.error('Error fetching plans:', error);
@@ -63,13 +41,34 @@ export default function PaymentPage() {
         setLoading(false);
       }
     };
-
     fetchPlans();
   }, []);
 
+  // Pre-select plan from query param ou localStorage e já inicia pagamento
+  useEffect(() => {
+    if (!loading && plans.length > 0 && searchParams) {
+      let planId = searchParams.get('plan');
+      // Se não veio na URL, tenta localStorage (caso pós-login)
+      if (!planId && typeof window !== 'undefined') {
+        planId = localStorage.getItem('pendingPlan');
+      }
+      if (planId && plans.some((p) => p.id === planId)) {
+        setSelectedPlan(planId);
+        // Inicia o pagamento automaticamente se ainda não iniciou
+        if (!currentPurchaseId && !processing) {
+          initiatePurchase(planId);
+        }
+      }
+    }
+  }, [loading, plans, searchParams, currentPurchaseId, processing]);
+
   const initiatePurchase = async (planId: string) => {
-    if (status !== 'authenticated') {
-      window.location.href = '/login';
+    // Se não estiver logado, salva plano e redireciona para login
+    if (!user) {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('pendingPlan', planId);
+        window.location.href = `/login?redirectTo=/pagamento?plan=${planId}`;
+      }
       return;
     }
 
@@ -96,6 +95,9 @@ export default function PaymentPage() {
       // Show PIX payment component
       setCurrentPurchaseId(data.purchase.id);
       setSelectedPlan(null); // Hide plan selection
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('pendingPlan');
+      }
     } catch (err) {
       console.error('Purchase error:', err);
       setError(err instanceof Error ? err.message : 'Erro ao processar pagamento');
@@ -209,15 +211,15 @@ export default function PaymentPage() {
                   onClick={() => initiatePurchase(plan.id)}
                   disabled={processing && selectedPlan === plan.id}
                   className={`w-full flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-black transition-all ${
-                    selectedPlan === plan.id && processing
-                      ? 'bg-gray-400 text-white'
+                    selectedPlan === plan.id
+                      ? 'bg-purple-700 text-white border-2 border-purple-900'
                       : 'bg-purple-600 text-white hover:bg-purple-700'
                   }`}
                 >
-                  {processing && selectedPlan === plan.id ? (
+                  {selectedPlan === plan.id ? (
                     <>
-                      <Loader size={20} className="animate-spin" />
-                      Processando...
+                      <CreditCard size={20} />
+                      Selecionado
                     </>
                   ) : (
                     <>
@@ -244,5 +246,16 @@ export default function PaymentPage() {
         </div>
       </div>
     </div>
+  );
+}
+export default function PaymentPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader className="animate-spin" size={32} />
+      </div>
+    }>
+      <PaymentContent />
+    </Suspense>
   );
 }

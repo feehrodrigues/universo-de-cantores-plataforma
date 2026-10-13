@@ -80,6 +80,22 @@ export async function POST(req: Request) {
       },
     });
 
+    // Criar aulas pendentes vinculadas ao aluno e à compra
+    const createdClasses = await prisma.$transaction(
+      Array.from({ length: plan.lessonsIncluded }).map(() => {
+        const data: any = {
+          title: 'Aula pendente',
+          paymentStatus: 'pending',
+          purchaseId: purchase.id,
+          students: {
+            connect: { id: user.id },
+          },
+        };
+        // Não inclui scheduledAt se não houver valor
+        return prisma.class.create({ data });
+      })
+    );
+
     // Generate PIX transaction
     const transactionId = generatePixTransactionId();
     const pixTransaction = await createPixTransaction({
@@ -137,6 +153,7 @@ export async function POST(req: Request) {
         qrCodeUrl: pixTransaction.qrCodeUrl,
         expiresAt: pixTransaction.expiresAt,
       },
+      createdClasses: createdClasses.map((c) => ({ id: c.id, title: c.title })),
     });
   } catch (error) {
     console.error('Payment initiation error:', error);

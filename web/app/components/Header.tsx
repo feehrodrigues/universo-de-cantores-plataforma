@@ -3,30 +3,23 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { useUser, useClerk } from '@clerk/nextjs';
-import { Menu, X, LogOut, User, LayoutDashboard } from 'lucide-react';
-import { useState, useRef, useEffect } from 'react';
+import { Menu, X, LayoutDashboard, LogOut } from 'lucide-react';
+import { useState } from 'react';
+
+// 1. IMPORTAMOS O NOSSO BOTÃO DE USUÁRIO UNIFICADO
+import HomeUserButton from './HomeUserButton';
 
 interface HeaderProps {
   variant?: 'default' | 'transparent' | 'solid';
 }
 
 export default function Header({ variant = 'default' }: HeaderProps) {
-  const { user, isLoaded } = useUser();
+  const { user } = useUser();
   const { signOut } = useClerk();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const userMenuRef = useRef<HTMLDivElement>(null);
 
-  // Fechar menu ao clicar fora
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
-        setUserMenuOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  // 2. REMOVEMOS O ESTADO E EFEITOS DO MENU ANTIGO (userMenuOpen, userMenuRef, etc.)
+  // A lógica agora está toda dentro do HomeUserButton.
 
   const bgClass = {
     default: 'bg-[var(--background)]/80 backdrop-blur-xl border-b border-[var(--card-border)]',
@@ -34,7 +27,7 @@ export default function Header({ variant = 'default' }: HeaderProps) {
     solid: 'bg-[var(--background)] border-b border-[var(--card-border)]',
   }[variant];
 
-  // Determinar o role do usuário (salvo no metadata do Clerk)
+  // A lógica de role e link do dashboard continua aqui para o menu mobile
   const userRole = (user?.unsafeMetadata as any)?.role || (user?.publicMetadata as any)?.role || 'student';
   const dashboardLink = userRole === 'admin' || userRole === 'teacher' ? '/teacher' : '/dashboard';
 
@@ -68,67 +61,8 @@ export default function Header({ variant = 'default' }: HeaderProps) {
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-3">
             {user ? (
-              <div className="relative" ref={userMenuRef}>
-                <button
-                  onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className="flex items-center gap-2 px-3 py-2 rounded-full bg-[var(--card-bg)] border border-[var(--card-border)] hover:border-[#7732A6] transition-colors"
-                >
-                  {user.imageUrl ? (
-                    <Image 
-                      src={user.imageUrl} 
-                      alt={user.firstName || 'Usuário'} 
-                      width={32} 
-                      height={32} 
-                      className="rounded-full"
-                    />
-                  ) : (
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#7732A6] to-[#F252BA] flex items-center justify-center text-white font-bold text-sm">
-                      {user.firstName?.charAt(0).toUpperCase() || 'U'}
-                    </div>
-                  )}
-                  <span className="text-sm font-medium text-[var(--foreground)] max-w-24 truncate">
-                    {user.firstName || 'Usuário'}
-                  </span>
-                </button>
-
-                {/* Dropdown Menu */}
-                {userMenuOpen && (
-                  <div className="absolute right-0 top-full mt-2 w-56 bg-[var(--card-bg)] border border-[var(--card-border)] rounded-2xl shadow-xl py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-                    <div className="px-4 py-2 border-b border-[var(--card-border)]">
-                      <p className="text-sm font-bold text-[var(--foreground)] truncate">{user.fullName}</p>
-                      <p className="text-xs text-[var(--foreground-muted)] truncate">{user.primaryEmailAddress?.emailAddress}</p>
-                    </div>
-                    
-                    <Link
-                      href={dashboardLink}
-                      onClick={() => setUserMenuOpen(false)}
-                      className="flex items-center gap-3 px-4 py-3 text-sm text-[var(--foreground)] hover:bg-[var(--background-secondary)] transition-colors"
-                    >
-                      <LayoutDashboard size={18} className="text-[#7732A6]" />
-                      Meu Painel
-                    </Link>
-                    
-                    <Link
-                      href="/perfil"
-                      onClick={() => setUserMenuOpen(false)}
-                      className="flex items-center gap-3 px-4 py-3 text-sm text-[var(--foreground)] hover:bg-[var(--background-secondary)] transition-colors"
-                    >
-                      <User size={18} className="text-[var(--foreground-muted)]" />
-                      Minha Conta
-                    </Link>
-                    
-                    <div className="h-px bg-[var(--card-border)] my-1" />
-                    
-                    <button
-                      onClick={() => signOut({ redirectUrl: '/login' })}
-                      className="flex items-center gap-3 px-4 py-3 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors w-full"
-                    >
-                      <LogOut size={18} />
-                      Sair da Conta
-                    </button>
-                  </div>
-                )}
-              </div>
+              // 3. SUBSTITUÍMOS TODO O BLOCO DO BOTÃO ANTIGO PELO NOSSO COMPONENTE
+              <HomeUserButton />
             ) : (
               <>
                 <Link 
@@ -156,7 +90,7 @@ export default function Header({ variant = 'default' }: HeaderProps) {
           </button>
         </div>
 
-        {/* Mobile Menu */}
+        {/* Mobile Menu (A lógica aqui pode continuar, pois o design é diferente) */}
         {mobileMenuOpen && (
           <div className="md:hidden py-4 border-t border-[var(--card-border)] animate-in slide-in-from-top-2 duration-200">
             <div className="flex flex-col gap-1">
@@ -169,7 +103,6 @@ export default function Header({ variant = 'default' }: HeaderProps) {
               
               {user ? (
                 <div className="space-y-2">
-                  {/* Info do usuário no mobile */}
                   <div className="flex items-center gap-3 px-4 py-2">
                     {user.imageUrl ? (
                       <Image 
@@ -236,6 +169,7 @@ export default function Header({ variant = 'default' }: HeaderProps) {
   );
 }
 
+// Funções de Link auxiliares (continuam iguais)
 function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
     <Link 

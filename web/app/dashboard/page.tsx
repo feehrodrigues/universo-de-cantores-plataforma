@@ -1,7 +1,18 @@
 import { redirect } from "next/navigation";
 import { auth, currentUser } from "@clerk/nextjs/server";
 import Link from "next/link";
-import { Music2, BookOpen, Calendar, Heart, ArrowRight, Settings, FileText, CreditCard, TrendingUp, Clock, Video, AlertCircle, CheckCircle, Loader2 } from "lucide-react";
+import { Music2, BookOpen, Calendar, Heart, ArrowRight, Settings, FileText, CreditCard, TrendingUp, Clock, Video, AlertCircle, CheckCircle, Loader2, MapPin, ChevronRight } from "lucide-react";
+import { Fragment } from "react";
+// Utilitário para agrupar aulas por data (YYYY-MM-DD)
+function groupClassesByDate(classes: any[]) {
+  const grouped: Record<string, any[]> = {};
+  classes.forEach((cls) => {
+    const date = cls.scheduledAt ? new Date(cls.scheduledAt).toISOString().slice(0, 10) : 'Sem data';
+    if (!grouped[date]) grouped[date] = [];
+    grouped[date].push(cls);
+  });
+  return grouped;
+}
 import PageLayout from "@/app/components/PageLayout";
 import LogoutButton from "@/app/components/LogoutButton";
 import { prisma } from "@/lib/prisma";
@@ -158,6 +169,18 @@ export default async function DashboardPage() {
 
   const hasSignedTerms = signedContracts.includes('terms');
   const hasSignedImage = signedContracts.includes('image');
+
+  // Buscar todas as aulas do aluno (não só a próxima)
+  const allClasses = await prisma.class.findMany({
+    where: {
+      students: { some: { id: dbUser.id } },
+    },
+    orderBy: { scheduledAt: 'asc' },
+    include: {
+      instructor: { select: { name: true } },
+    },
+  });
+  const groupedByDate = groupClassesByDate(allClasses);
 
   return (
     <PageLayout>
@@ -330,6 +353,103 @@ export default async function DashboardPage() {
               description="Agende aulas individuais e acompanhe sua evolução vocal."
               color="bg-[#5B21B6]"
             />
+          </div>
+
+
+          {/* FEED VISUAL DE AULAS AGRUPADAS POR DATA */}
+          <div className="mb-12">
+            <h2 className="text-2xl font-black mb-4 text-[var(--foreground)]">Minhas Aulas</h2>
+            <div className="space-y-8">
+              {Object.keys(groupedByDate).length > 0 ? (
+                Object.entries(groupedByDate).map(([date, group]) => (
+                  <Fragment key={date}>
+                    <div className="mb-2 mt-6 flex items-center gap-2">
+                      <Calendar size={20} className="text-purple-600" />
+                      <span className="font-black text-lg text-purple-700">
+                        {date === 'Sem data' ? 'Aulas sem data' : new Date(date).toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' })}
+                      </span>
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-6">
+                      {group.map((cls) => {
+                        const now = new Date();
+                        const scheduledAt = cls.scheduledAt ? new Date(cls.scheduledAt) : null;
+                        let status = 'pending';
+                        if (cls.completedAt) status = 'completed';
+                        else if (scheduledAt && scheduledAt > now) status = 'upcoming';
+                        const statusColors = {
+                          upcoming: { bg: 'bg-purple-100', text: 'text-purple-700', label: 'PRÓXIMA' },
+                          completed: { bg: 'bg-green-100', text: 'text-green-700', label: 'CONCLUÍDA' },
+                          pending: { bg: 'bg-yellow-100', text: 'text-yellow-700', label: 'PENDENTE' },
+                        };
+                        const colors = statusColors[status as keyof typeof statusColors];
+                        return (
+                          <div
+                            key={cls.id}
+                            className="bg-[var(--card-bg)] rounded-2xl p-6 shadow-sm border border-[var(--card-border)] hover:shadow-lg transition-all flex flex-col justify-between min-h-[200px]"
+                          >
+                            <div>
+                              <span className={`inline-block px-3 py-1 ${colors.bg} ${colors.text} rounded-full text-xs font-black mb-2`}>
+                                {colors.label}
+                              </span>
+                              <h3 className="text-xl font-black text-[var(--foreground)]">{cls.title}</h3>
+                              <div className="flex gap-4 text-sm text-[var(--foreground-muted)] font-bold mt-2 flex-wrap">
+                                {scheduledAt && (
+                                  <span className="flex items-center gap-1">
+                                    <Calendar size={16} />
+                                    {scheduledAt.toLocaleDateString('pt-BR')}
+                                  </span>
+                                )}
+                                {scheduledAt && (
+                                  <span className="flex items-center gap-1">
+                                    <Clock size={16} />
+                                    {scheduledAt.toLocaleTimeString('pt-BR', {
+                                      hour: '2-digit',
+                                      minute: '2-digit',
+                                    })}
+                                  </span>
+                                )}
+                                <span className="flex items-center gap-1">
+                                  <MapPin size={16} />
+                                  {cls.type || 'Online'}
+                                </span>
+                                {/* Status de pagamento */}
+                                <span className={`flex items-center gap-1 ${cls.paymentStatus === 'paid' ? 'text-green-600' : 'text-yellow-600'}`}>
+                                  {cls.paymentStatus === 'paid' ? '💸 Pago' : '⏳ Pagamento Pendente'}
+                                </span>
+                              </div>
+                              <p className="text-[var(--foreground-muted)] mb-4 font-bold mt-2">{cls.description || 'Aula marcada'}</p>
+                            </div>
+                            <div className="flex gap-2 mt-4">
+                              <Link href={`/student/classes/${cls.id}/briefing`} className="text-purple-600 font-bold text-sm hover:text-purple-700 flex items-center gap-1">
+                                📋 Briefing <ChevronRight size={14} />
+                              </Link>
+                              {status === 'upcoming' && (
+                                <Link
+                                  href={cls.jitsiLink || '#'}
+                                  className="px-4 py-2 bg-purple-600 text-white rounded-lg font-bold text-sm hover:bg-purple-700 transition-all whitespace-nowrap"
+                                >
+                                  Entrar
+                                </Link>
+                              )}
+                              {status === 'completed' && (
+                                <Link
+                                  href={`/student/classes/${cls.id}/report`}
+                                  className="px-4 py-2 bg-slate-100 text-[var(--foreground)] rounded-lg font-bold text-sm hover:bg-slate-200 transition-all whitespace-nowrap"
+                                >
+                                  Ver Relatório
+                                </Link>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </Fragment>
+                ))
+              ) : (
+                <div className="text-center text-[var(--foreground-muted)] font-bold py-12">Nenhuma aula encontrada.</div>
+              )}
+            </div>
           </div>
 
           {/* Evolução Vocal EME - Gráfico Dinâmico */}

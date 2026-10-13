@@ -61,13 +61,13 @@ export default async function Home() {
     })) || [];
 
   return (
-    <main className="min-h-screen text-[var(--foreground)] flex flex-col relative overflow-hidden">
+    <main className="min-h-screen text-[var(--foreground)] flex flex-col relative">
       
       {/* HERO - usa o fundo global do GlobalBackground */}
       <div className="min-h-[90vh] flex flex-col justify-between relative">
         
         {/* HEADER MINIMALISTA */}
-        <header className="w-full max-w-7xl mx-auto p-6 md:p-10 flex justify-between items-center z-10">
+        <header className="w-full max-w-7xl mx-auto p-6 md:p-10 flex justify-between items-center z-[100]">
           <Link href="/" className="flex items-center">
             <div className="relative w-10 h-10 md:w-12 md:h-12 overflow-hidden rounded-full shadow-lg">
               <Image 
@@ -247,15 +247,15 @@ export default async function Home() {
                 />
               </div>
             ) : (
-              <AdSlot format="rectangle" slotId="home-1" />
+              <AdSlot format="rectangle" slotId="1537981634" />
             )}
             
             {/* Slot 2: Google Ads (300x250) */}
-            <AdSlot format="rectangle" slotId="home-2" />
+            <AdSlot format="rectangle" slotId="6354718685" />
             
             {/* Slot 3: Google Ads (300x250) - esconde em telas médias */}
             <div className="hidden lg:block">
-              <AdSlot format="rectangle" slotId="home-3" />
+              <AdSlot format="rectangle" slotId="5700112569" />
             </div>
           </div>
           

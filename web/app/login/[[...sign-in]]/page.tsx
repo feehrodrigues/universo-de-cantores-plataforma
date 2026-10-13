@@ -7,10 +7,14 @@ import Image from "next/image";
 export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
-      <div className="max-w-md w-full bg-[var(--card-bg)] backdrop-blur-xl p-10 rounded-3xl shadow-xl border border-[var(--card-border)] relative z-10">
+      {/* 
+        AJUSTE 1: Mudei "p-10" para "p-6 sm:p-10" para dar espaço no celular e não esmagar o Clerk. 
+        Adicionei "flex flex-col items-center" para forçar tudo ao centro.
+      */}
+      <div className="max-w-md w-full flex flex-col items-center bg-[var(--card-bg)] backdrop-blur-xl p-6 sm:p-10 rounded-3xl shadow-xl border border-[var(--card-border)] relative z-10 overflow-hidden">
         
         {/* Logo */}
-        <div className="text-center mb-8">
+        <div className="text-center w-full mb-8">
           <Link href="/" className="inline-block">
             <div className="relative w-20 h-20 mx-auto mb-4">
               <Image 
@@ -30,13 +34,14 @@ export default function LoginPage() {
         </div>
 
         {/* Clerk SignIn Component */}
-        <div className="clerk-container">
+        {/* AJUSTE 2: Garantindo que a div do Clerk ocupe 100% e centralize seu conteúdo */}
+        <div className="w-full flex justify-center items-center">
           <SignIn 
             appearance={{
               elements: {
-                // Container principal
-                rootBox: "w-full",
-                card: "bg-transparent shadow-none p-0",
+                // AJUSTE 3: Forçamos o rootBox e o card a não ultrapassarem a tela (max-w-full)
+                rootBox: "w-full flex justify-center",
+                card: "bg-transparent shadow-none p-0 w-full max-w-full",
                 
                 // Header do Clerk (escondemos porque já temos o nosso)
                 headerTitle: "hidden",
@@ -93,7 +98,7 @@ export default function LoginPage() {
         </div>
 
         {/* Link para cadastro */}
-        <div className="mt-8 text-center">
+        <div className="mt-8 text-center w-full">
           <p className="text-[var(--foreground-muted)] text-sm">
             Ainda não tem conta?{" "}
             <Link href="/cadastro" className="text-[#7732A6] hover:text-[#9747FF] font-semibold transition-colors">

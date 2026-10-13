@@ -1,5 +1,5 @@
 import { createClient } from 'next-sanity'
-import createImageUrlBuilder from '@sanity/image-url' // <--- MUDOU AQUI
+import { createImageUrlBuilder } from '@sanity/image-url' // <--- corrigido para named export
 
 export const client = createClient({
   projectId: '8yxu9vfv', // <--- COLE SEU ID AQUI
@@ -7,6 +7,7 @@ export const client = createClient({
   apiVersion: '2024-01-01',
   useCdn: false, // Deixe false para ver as atualizações na hora enquanto desenvolve
 })
+
 
 // Configuração para extrair a URL das imagens do Sanity
 const builder = createImageUrlBuilder(client)

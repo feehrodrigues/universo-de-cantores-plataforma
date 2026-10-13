@@ -201,6 +201,35 @@ async function handlePaymentCompleted(purchase: any): Promise<void> {
       });
     }
 
+    // Create 'pending' class records for each lesson purchased
+    // Only if this purchase is for a package (not a single class)
+    if (purchase.lessonsRemaining > 0) {
+      const studentId = purchase.userId;
+      const instructorId = purchase.paymentPlan.instructorId || null; // If you have instructor assignment logic
+      const numClasses = purchase.lessonsRemaining;
+      const classesToCreate = [];
+      for (let i = 0; i < numClasses; i++) {
+        const classData: any = {
+          title: `Aula pendente (${i + 1}/${numClasses})`,
+          description: `Aula adquirida no pacote ${purchase.paymentPlan.name}`,
+          scheduledAt: null as Date | null,
+          duration: 60,
+          classType: 'online',
+          paymentStatus: 'completed',
+          purchaseId: purchase.id,
+          students: { connect: { id: studentId } },
+        };
+        if (instructorId) {
+          classData.instructor = { connect: { id: instructorId } };
+        }
+        classesToCreate.push(classData);
+      }
+      // Bulk create classes
+      await Promise.all(classesToCreate.map(async (classData) => {
+        await prisma.class.create({ data: classData });
+      }));
+    }
+
     console.log(`Payment completed for purchase ${purchase.id}`);
   } catch (error) {
     console.error('Error handling payment completion:', error);
