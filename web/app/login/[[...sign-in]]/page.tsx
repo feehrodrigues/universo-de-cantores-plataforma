@@ -82,7 +82,7 @@ export default function LoginPage() {
               variables: {
             
                 colorBackground: "transparent",
-  
+                colorInputText: "var(--foreground)",
                 borderRadius: "1rem",
                 fontFamily: "inherit",
               },
