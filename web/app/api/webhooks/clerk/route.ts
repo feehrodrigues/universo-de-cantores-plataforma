@@ -65,7 +65,7 @@ export async function POST(req: Request) {
           data: {
             id: id,
             email: email,
-            name: first_name ? `${first_name} ${last_name || ""}`.trim() : "Usuário",
+           name: first_name ? `${first_name} ${last_name || ""}`.trim() : email.split("@")[0],
             image: image_url,
           },
         });
