@@ -1200,9 +1200,12 @@ import { prisma } from "@/lib/prisma";
 
 // PATCH /api/classes/[classId]
 // Permite atribuir professor e agendar aula pendente
-export async function PATCH(req: Request, { params }: { params: { classId: string } }) {
+export async function PATCH(
+  req: Request,
+  { params }: { params: Promise<{ classId: string }> }
+) {
   try {
-    const { classId } = params;
+    const { classId } = await params;
     const { instructorId, scheduledAt, title, description, classType, duration } = await req.json();
     const data: any = {};
     if (instructorId) data.instructor = { connect: { id: instructorId } };
@@ -1224,7 +1227,6 @@ export async function PATCH(req: Request, { params }: { params: { classId: strin
     return NextResponse.json({ error: "Erro interno" }, { status: 500 });
   }
 }
-
 
 ========================================
 === ARQUIVO: \app\api\comments\route.ts ===
@@ -5311,14 +5313,13 @@ export default function CadastroPage() {
                 alert: "rounded-2xl",
                 alertText: "text-sm",
               },
-              layout: {
+              options: {
                 socialButtonsPlacement: "top",
                 socialButtonsVariant: "blockButton",
               },
               variables: {
                 
                 colorBackground: "transparent",
-        
                 borderRadius: "1rem",
                 fontFamily: "inherit",
               },
@@ -11430,7 +11431,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       appearance={{
         variables: {
           colorPrimary: "#7732A6",
-          
           borderRadius: "1rem",
         },
       }}
@@ -11743,15 +11743,13 @@ export default function LoginPage() {
                 // Identity preview
                 identityPreviewEditButton: "text-[#7732A6] hover:text-[#9747FF]",
               },
-              layout: {
+              options: {
                 socialButtonsPlacement: "top",
                 socialButtonsVariant: "blockButton",
               },
               variables: {
-                colorPrimary: "#7732A6",
-               
+            
                 colorBackground: "transparent",
-             
                 borderRadius: "1rem",
                 fontFamily: "inherit",
               },
@@ -11776,6 +11774,7 @@ export default function LoginPage() {
     </div>
   );
 }
+
 
 ========================================
 === ARQUIVO: \app\musica\[slug]\page.tsx ===
@@ -12282,7 +12281,7 @@ export default function OnboardingPage() {
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useUser } from '@clerk/nextjs';
 import Link from 'next/link';
@@ -12298,7 +12297,7 @@ interface PaymentPlan {
   description?: string;
 }
 
-export default function PaymentPage() {
+function PaymentContent() {
   const { user, isLoaded } = useUser();
   const searchParams = useSearchParams();
   const [plans, setPlans] = useState<PaymentPlan[]>([]);
@@ -12530,7 +12529,17 @@ export default function PaymentPage() {
     </div>
   );
 }
-
+export default function PaymentPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader className="animate-spin" size={32} />
+      </div>
+    }>
+      <PaymentContent />
+    </Suspense>
+  );
+}
 
 ========================================
 === ARQUIVO: \app\page.tsx ===
@@ -13199,7 +13208,6 @@ export default function PerfilPage() {
                   profileSectionContent: "text-[var(--foreground-muted)]",
                 },
                 variables: {
-                  colorPrimary: "#7732A6",
                   
                   borderRadius: "1rem",
                 },
@@ -14851,7 +14859,34 @@ export default function MyClasses() {
             href="/aulas"
             className="px-6 py-3 bg-[#7732A6] text-white rounded-lg font-bold hover:opacity-90 transition-all whitespace-nowrap"
           >
-            {/* FEED VISUAL DE AULAS AGRUPADAS POR DATA */}
+            <Plus size={20} className="inline mr-2" />
+            Nova Aula
+          </Link>
+        </div>
+
+        <div className="flex gap-2 flex-wrap">
+          {[
+            { label: 'Todas', value: 'todas' },
+            { label: 'Próximas', value: 'upcoming' },
+            { label: 'Concluídas', value: 'completed' },
+            { label: 'Pendentes', value: 'pending' },
+          ].map((filter) => (
+            <button
+              key={filter.value}
+              onClick={() => setFilterStatus(filter.value)}
+              className={`px-4 py-2 rounded-lg font-bold text-sm transition-all ${
+                filterStatus === filter.value
+                  ? 'bg-[#7732A6] text-white'
+                  : 'bg-[var(--background-secondary)] text-[var(--foreground-muted)] hover:opacity-80'
+              }`}
+            >
+              {filter.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* FEED VISUAL DE AULAS AGRUPADAS POR DATA */}
             <div className="space-y-8">
               {Object.keys(groupedByDate).length > 0 ? (
                 Object.entries(groupedByDate).map(([date, group]) => (
@@ -14969,44 +15004,6 @@ export default function MyClasses() {
                 <div className="text-center text-[var(--foreground-muted)] font-bold py-12">Nenhuma aula encontrada.</div>
               )}
             </div>
-                            });
-                        } else {
-                          alert('Erro ao agendar aula.');
-                        }
-                      }}
-                    >
-                      Agendar
-                    </button>
-                  )}
-                </div>
-
-                <p className="text-[var(--foreground-muted)] mb-4 font-bold">{cls.description || 'Aula marcada'}</p>
-
-                <div className="flex gap-2">
-                  <Link href={`/student/classes/${cls.id}/briefing`} className="text-purple-600 font-bold text-sm hover:text-purple-700 flex items-center gap-1">
-                    📋 Briefing <ChevronRight size={14} />
-                  </Link>
-                  <button className="text-[var(--foreground-muted)] font-bold text-sm hover:text-[var(--foreground)] flex items-center gap-1">
-                    👩‍🏫 Instrutor <ChevronRight size={14} />
-                  </button>
-                </div>
-              </div>
-            );
-          })
-        ) : (
-          <div className="bg-slate-50 rounded-2xl p-12 text-center border border-[var(--card-border)]">
-            <Calendar size={40} className="text-slate-300 mx-auto mb-4" />
-            <h3 className="text-xl font-black text-[var(--foreground)] mb-2">Nenhuma aula encontrada</h3>
-            <p className="text-[var(--foreground-muted)] font-bold mb-6">Agende suas aulas agora mesmo</p>
-            <Link
-              href="/aulas"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg font-black hover:bg-purple-700 transition-all"
-            >
-              <Plus size={20} /> Agendar Aula
-            </Link>
-          </div>
-        )}
-      </div>
     </div>
   );
 }
@@ -17978,18 +17975,6 @@ const builder = createImageUrlBuilder(client)
 export function urlFor(source: any) {
   return builder.image(source)
 }
-
-========================================
-=== ARQUIVO: \next-env.d.ts ===
-========================================
-
-/// <reference types="next" />
-/// <reference types="next/image-types/global" />
-import "./.next/dev/types/routes.d.ts";
-
-// NOTE: This file should not be edited
-// see https://nextjs.org/docs/app/api-reference/config/typescript for more information.
-
 
 ========================================
 === ARQUIVO: \next.config.ts ===
