@@ -82,8 +82,7 @@ export default function LoginPage() {
               variables: {
             
                 colorBackground: "transparent",
-                colorInputBackground: "var(--input-bg)",
-                colorInputText: "var(--foreground)",
+  
                 borderRadius: "1rem",
                 fontFamily: "inherit",
               },
