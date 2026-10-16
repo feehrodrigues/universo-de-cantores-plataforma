@@ -75,7 +75,7 @@ export default function LoginPage() {
                 // Identity preview
                 identityPreviewEditButton: "text-[#7732A6] hover:text-[#9747FF]",
               },
-              layout: {
+              options: {
                 socialButtonsPlacement: "top",
                 socialButtonsVariant: "blockButton",
               },

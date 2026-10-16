@@ -67,7 +67,7 @@ export default function CadastroPage() {
                 alert: "rounded-2xl",
                 alertText: "text-sm",
               },
-              layout: {
+              options: {
                 socialButtonsPlacement: "top",
                 socialButtonsVariant: "blockButton",
               },
