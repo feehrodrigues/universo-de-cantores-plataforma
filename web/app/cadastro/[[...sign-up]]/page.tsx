@@ -74,7 +74,6 @@ export default function CadastroPage() {
               variables: {
                 
                 colorBackground: "transparent",
-                colorInputBackground: "var(--input-bg)",
                 colorInputText: "var(--foreground)",
                 borderRadius: "1rem",
                 fontFamily: "inherit",
