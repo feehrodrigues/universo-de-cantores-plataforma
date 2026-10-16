@@ -1,0 +1,53 @@
+{
+  "name": "web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "prisma generate && next build",
+    "start": "next start",
+    "lint": "eslint",
+    "postinstall": "prisma generate"
+  },
+  "dependencies": {
+    "@clerk/localizations": "^4.2.1",
+    "@clerk/nextjs": "^7.0.4",
+    "@jitsi/react-sdk": "^1.4.4",
+    "@portabletext/react": "^6.0.0",
+    "@prisma/client": "^6.5.0",
+    "@sanity/image-url": "^2.0.2",
+    "@types/file-saver": "^2.0.7",
+    "bcryptjs": "^3.0.3",
+    "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
+    "file-saver": "^2.0.5",
+    "framer-motion": "^12.34.3",
+    "lucide-react": "^0.561.0",
+    "next": "^16.1.6",
+    "next-sanity": "^11.6.11",
+    "next-themes": "^0.4.6",
+    "nodemailer": "^7.0.13",
+    "qrcode": "^1.5.4",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "recharts": "^3.8.0",
+    "svix": "^1.87.0",
+    "tailwind-merge": "^3.4.0",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^20",
+    "@types/nodemailer": "^7.0.11",
+    "@types/qrcode": "^1.5.6",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "baseline-browser-mapping": "^2.10.0",
+    "eslint": "^9",
+    "eslint-config-next": "16.0.10",
+    "prisma": "^6.5.0",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

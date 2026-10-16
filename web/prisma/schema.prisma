@@ -1,0 +1,299 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String             @id @default(cuid())
+  name            String?
+  email           String             @unique
+  emailVerified   DateTime?
+  image           String?
+  password        String?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  adminProfile    AdminProfile?
+  purchaseHistory ClassPurchase[]    @relation("purchaseHistory")
+  classReports    ClassReport[]
+  classesTaught   Class[]            @relation("InstructorClasses")
+  contactLeads    ContactLead[]
+  contractsSigned Contract[]
+  preBriefings    PreClassBriefing[]
+  studentProfile  StudentProfile?
+  classesEnrolled Class[]            @relation("StudentEnrollment")
+
+  @@map("users")
+}
+
+model StudentProfile {
+  id                 String                 @id @default(cuid())
+  userId             String                 @unique
+  lessonBalance      Int                    @default(0)
+  totalClassesBought Int                    @default(0)
+  monthlyLessonsUsed Int                    @default(0)
+  lastProgressUpdate DateTime?
+  createdAt          DateTime               @default(now())
+  updatedAt          DateTime               @updatedAt
+  generalGoal        String?
+  overallGoal        String?
+  vocalHistory       String?
+  expressionEvals    ExpressionEvaluation[]
+  modelingEvals      ModelingEvaluation[]
+  monthlyPlans       MonthlyLessonPlan[]
+  structureEvals     StructureEvaluation[]
+  user               User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vocalProfile       VocalProfile?
+
+  @@map("student_profiles")
+}
+
+model AdminProfile {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  role      String   @default("admin")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("admin_profiles")
+}
+
+model PaymentPlan {
+  id              String          @id @default(cuid())
+  name            String
+  price           Float
+  duration        String
+  lessonsIncluded Int
+  validityDays    Int             @default(30)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  description     String?
+  isActive        Boolean         @default(true)
+  isRecurring     Boolean         @default(false)
+  purchases       ClassPurchase[]
+
+  @@map("payment_plans")
+}
+
+model ClassPurchase {
+  id               String      @id @default(cuid())
+  userId           String
+  paymentPlanId    String
+  purchaseDate     DateTime    @default(now())
+  paymentDeadline  DateTime
+  paymentStatus    String      @default("pending")
+  paymentDate      DateTime?
+  pixQrCode        String?
+  lessonsRemaining Int
+  expiresAt        DateTime
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  contractId       String?
+  classId          String?     @unique
+  class            Class?      @relation("ClassPurchaseToClass", fields: [classId], references: [id])
+  contract         Contract?   @relation(fields: [contractId], references: [id])
+  paymentPlan      PaymentPlan @relation(fields: [paymentPlanId], references: [id])
+  user             User        @relation("purchaseHistory", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("class_purchases")
+}
+
+model Contract {
+  id                  String          @id @default(cuid())
+  userId              String
+  type                String          @default("terms")
+  title               String
+  content             String
+  signedAt            DateTime?
+  imageRightsConsent  Boolean?
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+  cancellationPolicy  String?
+  latePolicy          String?
+  lgpdConsent         Boolean?
+  otherImportantNotes String?
+  prepaymentPolicy    String?
+  replacementPolicy   String?
+  purchases           ClassPurchase[]
+  user                User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("contracts")
+}
+
+model Class {
+  id              String                 @id @default(cuid())
+  title           String
+  description     String?
+  instructorId    String
+  scheduledAt     DateTime
+  duration        Int                    @default(60)
+  classType       String                 @default("online")
+  paymentStatus   String                 @default("pending")
+  jitsiRoomId     String?
+  createdAt       DateTime               @default(now())
+  updatedAt       DateTime               @updatedAt
+  purchaseId      String?
+  purchase        ClassPurchase?         @relation("ClassPurchaseToClass")
+  report          ClassReport?
+  instructor      User                   @relation("InstructorClasses", fields: [instructorId], references: [id])
+  expressionEvals ExpressionEvaluation[]
+  modelingEvals   ModelingEvaluation[]
+  preBriefing     PreClassBriefing?
+  structureEvals  StructureEvaluation[]
+  students        User[]                 @relation("StudentEnrollment")
+
+  @@index([instructorId])
+  @@index([scheduledAt])
+  @@map("classes")
+}
+
+model PreClassBriefing {
+  id             String    @id @default(cuid())
+  classId        String    @unique
+  userId         String
+  vocalFocus     String?
+  emotionalState String?
+  physicalState  String?
+  musicChoice    String?
+  specificGoals  String?
+  completedAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  class          Class     @relation(fields: [classId], references: [id], onDelete: Cascade)
+  user           User      @relation(fields: [userId], references: [id])
+
+  @@map("pre_class_briefings")
+}
+
+model ClassReport {
+  id                  String    @id @default(cuid())
+  classId             String    @unique
+  userId              String
+  technicalAnalysis   String?
+  studentObservations String?
+  homework            String?
+  nextFocusAreas      String?
+  completedAt         DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  class               Class     @relation(fields: [classId], references: [id], onDelete: Cascade)
+  user                User      @relation(fields: [userId], references: [id])
+
+  @@map("class_reports")
+}
+
+model StructureEvaluation {
+  id                    String         @id @default(cuid())
+  classId               String
+  studentProfileId      String
+  breathSupport         Int?
+  glotticClosure        Int?
+  vocalRegisters        Int?
+  laryngealStability    Int?
+  compensationReduction Int?
+  finalGrade            Float?
+  notes                 String?
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+  class                 Class          @relation(fields: [classId], references: [id], onDelete: Cascade)
+  studentProfile        StudentProfile @relation(fields: [studentProfileId], references: [id])
+
+  @@map("structure_evaluations")
+}
+
+model ModelingEvaluation {
+  id               String         @id @default(cuid())
+  classId          String
+  studentProfileId String
+  vocalTractAdjust Int?
+  sourceFilterEff  Int?
+  diction          Int?
+  timbre           Int?
+  finalGrade       Float?
+  notes            String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  class            Class          @relation(fields: [classId], references: [id], onDelete: Cascade)
+  studentProfile   StudentProfile @relation(fields: [studentProfileId], references: [id])
+
+  @@map("modeling_evaluations")
+}
+
+model ExpressionEvaluation {
+  id                  String         @id @default(cuid())
+  classId             String
+  studentProfileId    String
+  interpretation      Int?
+  repertoireSelection Int?
+  artisticCoherence   Int?
+  finalGrade          Float?
+  notes               String?
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+  class               Class          @relation(fields: [classId], references: [id], onDelete: Cascade)
+  studentProfile      StudentProfile @relation(fields: [studentProfileId], references: [id])
+
+  @@map("expression_evaluations")
+}
+
+model VocalProfile {
+  id                 String         @id @default(cuid())
+  studentProfileId   String         @unique
+  totalClassesTaken  Int            @default(0)
+  avgStructureGrade  Float          @default(0)
+  avgModelingGrade   Float          @default(0)
+  avgExpressionGrade Float          @default(0)
+  overallGrade       Float          @default(0)
+  lastClassDate      DateTime?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  studentProfile     StudentProfile @relation(fields: [studentProfileId], references: [id], onDelete: Cascade)
+
+  @@map("vocal_profiles")
+}
+
+model MonthlyLessonPlan {
+  id               String         @id @default(cuid())
+  studentProfileId String
+  month            DateTime
+  structureFocus   String?
+  modelingFocus    String?
+  expressionFocus  String?
+  repertoireGoals  String?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  studentProfile   StudentProfile @relation(fields: [studentProfileId], references: [id])
+
+  @@map("monthly_lesson_plans")
+}
+
+model ContactLead {
+  id           String   @id @default(cuid())
+  userId       String?
+  name         String
+  email        String
+  phone        String?
+  message      String?
+  interestedIn String?
+  status       String   @default("new")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User?    @relation(fields: [userId], references: [id])
+
+  @@map("contact_leads")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  email     String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  used      Boolean  @default(false)
+
+  @@map("password_reset_tokens")
+}
